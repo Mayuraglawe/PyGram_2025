@@ -10,7 +10,24 @@ export interface Subject { id: number; name: string; code: string; department: s
 export interface Classroom { id: number; name: string; capacity: number; type: "Lecture" | "Lab"; has_projector: boolean; has_smartboard: boolean }
 export interface StudentBatch { id: number; name: string; year: number; semester: number; strength: number; department: string; subjects: number[] }
 export interface TimeSlot { id: number; day_of_week: string; start_time: string; end_time: string }
-export interface Timetable { id: number; name: string; status: "Draft" | "Pending Approval" | "Approved" | "Archived"; created_by: number; created_at: string; quality_score: number }
+export interface Timetable { 
+  id: number; 
+  name: string; 
+  status: "Draft" | "Pending Approval" | "Approved" | "Archived"; 
+  created_by: number; 
+  created_at: string; 
+  quality_score: number;
+  // New workflow fields
+  creator_id?: number; // Faculty Mentor 2 (Creator)
+  publisher_id?: number; // Faculty Mentor 1 (Publisher)
+  department_id?: string;
+  finalized_at?: string; // When Creator finalized the draft
+  approved_at?: string; // When Publisher approved/published
+  workflow_stage: "creation" | "finalized" | "under_review" | "published";
+  last_modified_by?: number;
+  last_modified_at?: string;
+  version: number; // For tracking versions
+}
 export interface ScheduledClass { id: number; timetable: number; subject: number; faculty: number; student_batch: number; classroom: number; timeslot: number; class_type: "Lecture" | "Lab" }
 
 export interface GenerateRequest { name: string; year: number; semester: number }
@@ -85,7 +102,7 @@ async function handleSupabaseRequest(urlPath: string, method: string, body?: any
       if (error) throw error;
       
       // Transform the data to match expected format
-      const transformedData = data?.map(batch => ({
+      const transformedData = data?.map((batch: any) => ({
         ...batch,
         subjects: batch.batch_subjects?.map((bs: any) => bs.subject_id) || []
       })) || [];

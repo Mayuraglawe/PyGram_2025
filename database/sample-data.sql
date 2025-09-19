@@ -1,4 +1,4 @@
--- Sample data for Py-Gram 2025
+-- Sample data for Py-Gram 2k25
 -- Run this after creating the schema to populate with test data
 
 -- Insert sample time slots (typical academic schedule)

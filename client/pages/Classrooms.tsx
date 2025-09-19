@@ -1,11 +1,10 @@
-import AppLayout from "@/components/layout/AppLayout";
 import { useGetClassroomsQuery } from "@/store/api";
 
 export default function ClassroomsPage() {
   const { data: raw, isLoading } = useGetClassroomsQuery();
-  const data = Array.isArray(raw) ? raw : (raw && (raw.results || raw.data) ? (raw.results || raw.data) : []);
+  const data = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' && 'results' in raw ? (raw as any).results : raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : []);
   return (
-    <AppLayout>
+    <>
       <h1 className="text-2xl font-bold">Classrooms</h1>
       <div className="mt-6 rounded-xl border">
         <table className="w-full text-sm">
@@ -37,6 +36,6 @@ export default function ClassroomsPage() {
           </tbody>
         </table>
       </div>
-    </AppLayout>
+    </>
   );
 }

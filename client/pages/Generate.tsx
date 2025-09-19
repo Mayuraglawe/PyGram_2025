@@ -1,4 +1,3 @@
-import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useGenerateTimetableMutation, useGetGenerationStatusQuery } from "@/store/api";
 import { useEffect, useState } from "react";
@@ -28,7 +27,7 @@ export default function GeneratePage() {
   };
 
   return (
-    <AppLayout>
+    <>
       <h1 className="text-2xl font-bold">Generate Timetable</h1>
       <p className="mt-2 text-muted-foreground">Triggers an asynchronous CSP + GA scheduling task via Celery. Track progress below.</p>
 
@@ -54,6 +53,6 @@ export default function GeneratePage() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </>
   );
 }

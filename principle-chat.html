@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💬 Chat with Principal - PyGram 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chat-header::before {
+            content: '👑';
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .chat-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chat-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            width: 12px;
+            height: 12px;
+            background: #4ade80;
+            border-radius: 50%;
+            border: 2px solid white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-body {
+            padding: 30px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-selector {
+            margin-bottom: 20px;
+        }
+
+        .category-selector label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .category-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .category-btn {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            border-color: #667eea;
+            background: #f8faff;
+        }
+
+        .category-btn.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .category-btn .icon {
+            font-size: 16px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .message-input-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .message-input-container label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .message-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+            background: #fafafa;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .char-counter.warning {
+            color: #f59e0b;
+        }
+
+        .char-counter.danger {
+            color: #ef4444;
+        }
+
+        .sender-info {
+            background: #f8faff;
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sender-info h3 {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .sender-info p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 2px 0;
+        }
+
+        .send-section {
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-btn .loading {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .telegram-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            color: #0369a1;
+            margin-bottom: 15px;
+        }
+
+        .telegram-info .bot-icon {
+            font-size: 16px;
+            margin-right: 5px;
+        }
+
+        .status-message.hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .chat-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .chat-body {
+                padding: 20px;
+            }
+
+            .category-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="status-indicator"></div>
+            <h1>Chat with Principal</h1>
+            <p>Send direct messages via Telegram</p>
+        </div>
+
+        <div class="chat-body">
+            <!-- Sender Information -->
+            <div class="sender-info">
+                <h3>👤 Your Details</h3>
+                <p><strong>Name:</strong> <span id="senderName">Publisher User</span></p>
+                <p><strong>Role:</strong> <span id="senderRole">Publisher Mentor</span></p>
+                <p><strong>Department:</strong> <span id="senderDept">Computer Science</span></p>
+            </div>
+
+            <!-- Telegram Info -->
+            <div class="telegram-info">
+                <span class="bot-icon">🤖</span>
+                Messages are delivered instantly to Principal's Telegram
+            </div>
+
+            <!-- Category Selection -->
+            <div class="category-selector">
+                <label>📋 Message Category</label>
+                <div class="category-buttons">
+                    <button class="category-btn active" data-category="general">
+                        <span class="icon">💬</span>
+                        General Query
+                    </button>
+                    <button class="category-btn" data-category="urgent">
+                        <span class="icon">🚨</span>
+                        Urgent Matter
+                    </button>
+                    <button class="category-btn" data-category="approval">
+                        <span class="icon">✅</span>
+                        Approval Request
+                    </button>
+                    <button class="category-btn" data-category="policy">
+                        <span class="icon">📜</span>
+                        Policy Inquiry
+                    </button>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-container">
+                <label for="messageText">✏️ Your Message to the Principal</label>
+                <textarea 
+                    id="messageText" 
+                    class="message-input" 
+                    placeholder="Type your message here... Be clear and specific about your request or concern."
+                    maxlength="4000"
+                ></textarea>
+                <div class="char-counter" id="charCounter">4000 characters remaining</div>
+            </div>
+
+            <!-- Send Section -->
+            <div class="send-section">
+                <div id="statusMessage" class="hidden"></div>
+                
+                <button id="sendBtn" class="send-btn">
+                    <span id="sendText">
+                        🚀 Send to Principal
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentCategory = 'general';
+        let isLoading = false;
+
+        // DOM elements
+        const categoryButtons = document.querySelectorAll('.category-btn');
+        const messageInput = document.getElementById('messageText');
+        const charCounter = document.getElementById('charCounter');
+        const sendBtn = document.getElementById('sendBtn');
+        const sendText = document.getElementById('sendText');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 PRINCIPLE CHAT: Page loaded successfully');
+            
+            // Set up event listeners
+            setupCategoryButtons();
+            setupMessageInput();
+            setupSendButton();
+            
+            // Update sender info (you can customize this)
+            updateSenderInfo();
+        });
+
+        function setupCategoryButtons() {
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    categoryButtons.forEach(b => b.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    // Update current category
+                    currentCategory = this.dataset.category;
+                    
+                    console.log('📋 Category selected:', currentCategory);
+                });
+            });
+        }
+
+        function setupMessageInput() {
+            messageInput.addEventListener('input', function() {
+                const remaining = 4000 - this.value.length;
+                charCounter.textContent = remaining + ' characters remaining';
+                
+                // Update counter color based on remaining characters
+                charCounter.classList.remove('warning', 'danger');
+                if (remaining < 200) {
+                    charCounter.classList.add('warning');
+                }
+                if (remaining < 50) {
+                    charCounter.classList.add('danger');
+                }
+            });
+        }
+
+        function setupSendButton() {
+            sendBtn.addEventListener('click', sendMessage);
+        }
+
+        function updateSenderInfo() {
+            // You can customize these values or fetch from localStorage/session
+            document.getElementById('senderName').textContent = 'Publisher User';
+            document.getElementById('senderRole').textContent = 'Publisher Mentor';
+            document.getElementById('senderDept').textContent = 'Computer Science';
+        }
+
+        function showStatus(type, message) {
+            statusMessage.className = `status-message status-${type}`;
+            statusMessage.textContent = message;
+            statusMessage.classList.remove('hidden');
+            
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    hideStatus();
+                }, 3000);
+            }
+        }
+
+        function hideStatus() {
+            statusMessage.classList.add('hidden');
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            sendBtn.disabled = loading;
+            
+            if (loading) {
+                sendText.innerHTML = '<div class="loading"></div> Sending...';
+            } else {
+                sendText.innerHTML = '🚀 Send to Principal';
+            }
+        }
+
+        async function sendMessage() {
+            console.log('🚀 PRINCIPLE CHAT: Send button clicked');
+            
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                console.log('❌ PRINCIPLE CHAT: Empty message');
+                showStatus('error', 'Please enter a message before sending');
+                return;
+            }
+
+            if (isLoading) {
+                console.log('⏳ PRINCIPLE CHAT: Already sending, please wait');
+                return;
+            }
+
+            console.log('✅ PRINCIPLE CHAT: Starting message send process');
+            setLoading(true);
+            hideStatus();
+
+            try {
+                // Map category to priority
+                const priorityMap = {
+                    general: 'medium',
+                    urgent: 'high',
+                    approval: 'high',
+                    policy: 'medium'
+                };
+
+                // Add category context to message
+                const categoryPrefix = {
+                    general: '📋 General Query',
+                    urgent: '🚨 Urgent Matter',
+                    approval: '✅ Approval Request',
+                    policy: '📜 Policy Inquiry'
+                };
+
+                const enhancedMessage = `${categoryPrefix[currentCategory]}\\n\\n${message}`;
+
+                const requestPayload = {
+                    senderName: document.getElementById('senderName').textContent,
+                    senderRole: document.getElementById('senderRole').textContent + ' (Publisher)',
+                    senderDepartment: document.getElementById('senderDept').textContent,
+                    message: enhancedMessage,
+                    priority: priorityMap[currentCategory]
+                };
+
+                console.log('📤 PRINCIPLE CHAT: Sending request:', requestPayload);
+
+                const apiUrl = window.location.origin + '/api/telegram/send-to-principal';
+                console.log('🌐 PRINCIPLE CHAT: Using API URL:', apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+
+                console.log('📥 PRINCIPLE CHAT: API response status:', response.status);
+                
+                const data = await response.json();
+                console.log('📥 PRINCIPLE CHAT: API response data:', data);
+
+                if (data.success) {
+                    console.log('✅ PRINCIPLE CHAT: Message sent successfully!', data);
+                    showStatus('success', '🎉 Message sent to Principal successfully! Check your Telegram.');
+                    
+                    // Clear the message input
+                    messageInput.value = '';
+                    charCounter.textContent = '4000 characters remaining';
+                    charCounter.classList.remove('warning', 'danger');
+                    
+                } else {
+                    console.log('❌ PRINCIPLE CHAT: API returned failure:', data);
+                    showStatus('error', `❌ ${data.error || 'Failed to send message to Principal'}`);
+                }
+
+            } catch (error) {
+                console.error('❌ PRINCIPLE CHAT: Network/fetch error:', error);
+                showStatus('error', '❌ Network error. Please check your connection and try again.');
+            } finally {
+                setLoading(false);
+                console.log('🏁 PRINCIPLE CHAT: Send process completed');
+            }
+        }
+
+        // Add some keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + Enter to send
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                if (!isLoading) {
+                    sendMessage();
+                }
+            }
+        });
+
+        console.log('🎯 PRINCIPLE CHAT: Initialization complete');
+    </script>
+</body>
+</html>

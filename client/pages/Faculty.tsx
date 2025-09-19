@@ -1,4 +1,3 @@
-import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useAddFacultyMutation, useGetFacultyQuery } from "@/store/api";
 import { useForm } from "react-hook-form";
@@ -7,7 +6,7 @@ interface FormValues { name: string; employee_id: string; department: string }
 
 export default function FacultyPage() {
   const { data: raw, isLoading } = useGetFacultyQuery();
-  const data = Array.isArray(raw) ? raw : (raw && (raw.results || raw.data) ? (raw.results || raw.data) : []);
+  const data = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' && 'results' in raw ? (raw as any).results : raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : []);
   const [addFaculty, { isLoading: isSaving }] = useAddFacultyMutation();
   const { register, handleSubmit, reset } = useForm<FormValues>();
 
@@ -17,7 +16,7 @@ export default function FacultyPage() {
   };
 
   return (
-    <AppLayout>
+    <>
       <h1 className="text-2xl font-bold">Faculty</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 grid gap-3 rounded-xl border p-4 md:grid-cols-4">
@@ -53,6 +52,6 @@ export default function FacultyPage() {
           </tbody>
         </table>
       </div>
-    </AppLayout>
+    </>
   );
 }

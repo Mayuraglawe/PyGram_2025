@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Database types for Py-Gram 2025 timetable system
+// Database types for Py-Gram 2k25 timetable system
 export interface Database {
   public: {
     Tables: {

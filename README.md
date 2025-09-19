@@ -1,4 +1,4 @@
-# Py-Gram 2025 🎓
+# Py-Gram 2k25 🎓
 
 A sophisticated academic timetable generation system built with modern web technologies. Features a hybrid CSP + Genetic Algorithm approach for optimal schedule creation with real-time conflict detection.
 

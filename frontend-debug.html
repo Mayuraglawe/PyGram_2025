@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 3px; white-space: pre-wrap; }
+        .debug-log { background-color: #f1f3f4; padding: 10px; margin: 5px 0; border-radius: 3px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Frontend Debug Test</h1>
+    
+    <div class="test-section">
+        <h3>Step 1: Navigate to Main App</h3>
+        <button onclick="window.open('/', '_blank')">Open Main App</button>
+        <p>Open the main app, login with <code>pygram2k25/pygram2k25</code>, then come back here</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 2: Test Form Data Preparation</h3>
+        <button onclick="testFormData()">Test Form Data</button>
+        <div id="form-data-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 3: Test Network Request</h3>
+        <button onclick="testNetworkRequest()">Send Test Message</button>
+        <div id="network-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Step 4: Debug Script for Main App</h3>
+        <p>Copy this script and run it in the main app console:</p>
+        <div class="debug-log" id="debug-script">
+// Copy this entire script to the main app console
+console.log('🔧 FRONTEND DEBUG ACTIVATED');
+
+// Monitor all fetch requests
+const originalFetch = window.fetch;
+window.fetch = function(...args) {
+    console.log('🌐 FETCH REQUEST:', args[0]);
+    if (args[1]) {
+        console.log('  📤 Method:', args[1].method);
+        console.log('  📤 Headers:', args[1].headers);
+        if (args[1].body) {
+            console.log('  📤 Body:', args[1].body);
+        }
+    }
+    
+    return originalFetch.apply(this, args)
+        .then(async response => {
+            console.log('  📥 Status:', response.status);
+            const clone = response.clone();
+            try {
+                const data = await clone.json();
+                console.log('  📥 Response:', data);
+            } catch (e) {
+                console.log('  📥 Response: (not JSON)');
+            }
+            return response;
+        })
+        .catch(error => {
+            console.error('  ❌ Fetch Error:', error);
+            throw error;
+        });
+};
+
+// Find Principle Ask button
+function findPrincipleButton() {
+    const buttons = Array.from(document.querySelectorAll('button'));
+    const btn = buttons.find(b => 
+        b.textContent.includes('Principle') || 
+        b.textContent.includes('Principal') ||
+        b.innerHTML.includes('Crown')
+    );
+    
+    if (btn) {
+        console.log('✅ Found button:', btn);
+        btn.style.border = '3px solid red'; // Highlight it
+        return btn;
+    } else {
+        console.log('❌ Button not found');
+        return null;
+    }
+}
+
+const button = findPrincipleButton();
+if (button) {
+    console.log('🎯 Click the highlighted button and watch the console');
+} else {
+    console.log('🔍 Available buttons:', 
+        Array.from(document.querySelectorAll('button')).map(b => b.textContent.slice(0, 30))
+    );
+}
+        </div>
+        <button onclick="copyDebugScript()">Copy Debug Script</button>
+    </div>
+
+    <script>
+        function testFormData() {
+            const resultDiv = document.getElementById('form-data-result');
+            resultDiv.innerHTML = '⏳ Testing form data preparation...';
+            
+            try {
+                // Simulate the data that would be sent from the frontend
+                const mockUser = {
+                    first_name: "Test",
+                    last_name: "Publisher",
+                    email: "test@example.com",
+                    role: "mentor"
+                };
+                
+                const mockDepartment = {
+                    name: "Computer Science"
+                };
+                
+                const category = 'general';
+                const message = 'Test message from debug tool';
+                
+                // Replicate frontend logic
+                const priorityMap = {
+                    general: 'medium',
+                    urgent: 'high',
+                    approval: 'high',
+                    policy: 'medium'
+                };
+                
+                const categoryPrefix = {
+                    general: '📋 General Query',
+                    urgent: '🚨 Urgent Matter',
+                    approval: '✅ Approval Request',
+                    policy: '📜 Policy Inquiry'
+                };
+                
+                const priority = priorityMap[category];
+                const enhancedMessage = categoryPrefix[category] + '\\n\\n' + message.trim();
+                
+                const requestData = {
+                    senderName: (mockUser.first_name + ' ' + mockUser.last_name).trim() || mockUser.email,
+                    senderRole: (mockUser.role || 'user') + ' (Publisher)',
+                    senderDepartment: mockDepartment.name,
+                    message: enhancedMessage,
+                    priority,
+                };
+                
+                resultDiv.innerHTML = '✅ Form data preparation successful:\\n\\n' + JSON.stringify(requestData, null, 2);
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Form data preparation failed:\\n\\n' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        async function testNetworkRequest() {
+            const resultDiv = document.getElementById('network-result');
+            resultDiv.innerHTML = '⏳ Testing network request...';
+            
+            const testData = {
+                senderName: "Debug Test User",
+                senderRole: "mentor (Publisher)",
+                senderDepartment: "Computer Science",
+                message: "📋 General Query\\n\\n🔧 FRONTEND DEBUG TEST\\n\\nThis is a test message to verify the frontend integration is working.\\n\\nTimestamp: " + new Date().toLocaleString(),
+                priority: "medium"
+            };
+            
+            try {
+                const apiUrl = window.location.origin + '/api/telegram/send-to-principal';
+                console.log('📤 Sending test request to:', apiUrl);
+                console.log('📤 Request data:', testData);
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = '✅ NETWORK TEST SUCCESSFUL!\\n\\n' + JSON.stringify(data, null, 2) + '\\n\\n📱 Check Telegram for the message!';
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = '❌ Network test failed:\\n\\nStatus: ' + response.status + '\\nResponse: ' + JSON.stringify(data, null, 2);
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Network error:\\n\\n' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        function copyDebugScript() {
+            const script = document.getElementById('debug-script').textContent;
+            navigator.clipboard.writeText(script).then(() => {
+                alert('Debug script copied to clipboard! Paste it in the main app console.');
+            });
+        }
+        
+        // Auto-run form data test
+        window.onload = function() {
+            testFormData();
+        };
+    </script>
+</body>
+</html>

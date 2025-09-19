@@ -1,23 +1,37 @@
-import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { TimetableGrid } from "@/features/timetable/TimetableGrid";
 import ConflictHighlighter from "@/features/timetable/ConflictHighlighter";
 import { useGetTimetableByIdQuery, useListTimetablesQuery } from "@/store/api";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Bot, Plus } from "lucide-react";
 
 export default function TimetablesPage() {
   const { data: timetablesRaw, isLoading } = useListTimetablesQuery();
-  const timetables = Array.isArray(timetablesRaw) ? timetablesRaw : (timetablesRaw && (timetablesRaw.results || timetablesRaw.data) ? (timetablesRaw.results || timetablesRaw.data) : []);
+  const timetables = Array.isArray(timetablesRaw) ? timetablesRaw : (timetablesRaw && typeof timetablesRaw === 'object' && 'results' in timetablesRaw ? (timetablesRaw as any).results : timetablesRaw && typeof timetablesRaw === 'object' && 'data' in timetablesRaw ? (timetablesRaw as any).data : []);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { data: detailRaw } = useGetTimetableByIdQuery(selectedId!, { skip: !selectedId });
   const detail = detailRaw ?? undefined;
   const detailClasses = Array.isArray((detail as any)?.classes) ? (detail as any).classes : [];
 
   return (
-    <AppLayout>
+    <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Timetables</h1>
-        <Button asChild><a href="/generate">New Generation</a></Button>
+        <div className="flex gap-2">
+          <Button asChild className="gradient-primary">
+            <Link to="/timetables/create">
+              <Bot className="h-4 w-4 mr-2" />
+              Create New Timetable
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/generate">
+              <Plus className="h-4 w-4 mr-2" />
+              New Generation
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-4">
@@ -61,6 +75,6 @@ export default function TimetablesPage() {
           )}
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

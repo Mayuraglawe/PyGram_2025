@@ -24,7 +24,7 @@ export function TimetableGrid({ classes, highlightConflicts, conflicts = [] }: T
   return (
     <div className="w-full overflow-auto">
       <div className="min-w-[900px]">
-        <div className="grid" style={{ gridTemplateColumns: `120px repeat(${HOURS.length}, minmax(120px, 1fr))` }}>
+        <div className="grid timetable-grid">
           <div />
           {HOURS.map((h) => (
             <div key={h} className="sticky top-0 z-10 bg-background p-2 text-center text-xs font-semibold border-b">

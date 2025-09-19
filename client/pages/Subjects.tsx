@@ -1,11 +1,10 @@
-import AppLayout from "@/components/layout/AppLayout";
 import { useGetSubjectsQuery } from "@/store/api";
 
 export default function SubjectsPage() {
   const { data: raw, isLoading } = useGetSubjectsQuery();
-  const data = Array.isArray(raw) ? raw : (raw && (raw.results || raw.data) ? (raw.results || raw.data) : []);
+  const data = Array.isArray(raw) ? raw : (raw && typeof raw === 'object' && 'results' in raw ? (raw as any).results : raw && typeof raw === 'object' && 'data' in raw ? (raw as any).data : []);
   return (
-    <AppLayout>
+    <>
       <h1 className="text-2xl font-bold">Subjects</h1>
       <div className="mt-6 rounded-xl border">
         <table className="w-full text-sm">
@@ -41,6 +40,6 @@ export default function SubjectsPage() {
           </tbody>
         </table>
       </div>
-    </AppLayout>
+    </>
   );
 }

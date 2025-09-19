@@ -8,6 +8,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
+import { AuthProvider, ProtectedRoute } from "./contexts/AuthContext";
+import { DepartmentProvider } from "./contexts/DepartmentContext";
+import { DepartmentRouter } from "./components/routing/DepartmentRouter";
+import { NotificationProvider } from "./contexts/NotificationContext";
+import AppLayout from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import FacultyPage from "./pages/Faculty";
@@ -18,6 +23,17 @@ import TimetablesPage from "./pages/Timetables";
 import GeneratePage from "./pages/Generate";
 import SignInPage from "./pages/SignIn";
 import RegisterPage from "./pages/Register";
+import RoleSelectionPage from "./pages/RoleSelection";
+import DepartmentsPage from "./pages/Departments";
+import Events from './pages/Events';
+import ConflictResolution from './pages/ConflictResolution';
+import AdminPage from './pages/Admin';
+import TelegramSetup from './pages/TelegramSetup';
+import CreateTimetable from './pages/CreateTimetable';
+import TimetableEdit from './pages/TimetableEdit';
+import HODReview from './pages/HODReview';
+import AITimetableCreator from './pages/AITimetableCreator';
+import { NotificationList } from './components/notifications/NotificationComponents';
 
 const queryClient = new QueryClient();
 
@@ -25,26 +41,183 @@ const App = () => (
   <Provider store={store}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/faculty" element={<FacultyPage />} />
-            <Route path="/subjects" element={<SubjectsPage />} />
-            <Route path="/classrooms" element={<ClassroomsPage />} />
-            <Route path="/batches" element={<BatchesPage />} />
-            <Route path="/timetables" element={<TimetablesPage />} />
-            <Route path="/generate" element={<GeneratePage />} />
-            <Route path="/signin" element={<SignInPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </Provider>
+        <AuthProvider>
+          <DepartmentProvider>
+            <NotificationProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <DepartmentRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/role-selection" element={<RoleSelectionPage />} />
+              <Route path="/signin" element={<SignInPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              
+              {/* Protected routes - all wrapped with AppLayout */}
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Index />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Faculty management - Admin and Mentors only */}
+              <Route path="/faculty" element={
+                <ProtectedRoute requiredPermission="view_department_data">
+                  <AppLayout>
+                    <FacultyPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Subjects management - Admin and Mentors only */}
+              <Route path="/subjects" element={
+                <ProtectedRoute requiredPermission="view_department_data">
+                  <AppLayout>
+                    <SubjectsPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Classrooms management - Admin and Mentors only */}
+              <Route path="/classrooms" element={
+                <ProtectedRoute requiredPermission="view_department_data">
+                  <AppLayout>
+                    <ClassroomsPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Batches management - Admin and Mentors only */}
+              <Route path="/batches" element={
+                <ProtectedRoute requiredPermission="view_department_data">
+                  <AppLayout>
+                    <BatchesPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Timetables - All authenticated users can view */}
+              <Route path="/timetables" element={
+                <ProtectedRoute requiredPermission="view_timetables">
+                  <AppLayout>
+                    <TimetablesPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Generate timetables - Admin only */}
+              <Route path="/generate" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AppLayout>
+                    <GeneratePage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Create timetables - Now uses AI Creator (Creator Mentors only) */}
+              <Route path="/timetables/create" element={
+                <ProtectedRoute requiredPermission="create_timetable_drafts">
+                  <AppLayout>
+                    <AITimetableCreator />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* AI Timetable Creator - Alternate route */}
+              <Route path="/timetables/ai-create" element={
+                <ProtectedRoute requiredPermission="create_timetable_drafts">
+                  <AppLayout>
+                    <AITimetableCreator />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Edit timetables - Creator and Publisher Mentors */}
+              <Route path="/timetables/:id/edit" element={
+                <ProtectedRoute requiredPermission="edit_timetables">
+                  <AppLayout>
+                    <TimetableEdit />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Publisher Review Queue - Publisher Mentors only */}
+              <Route path="/timetables/review" element={
+                <ProtectedRoute requiredPermission="publish_timetables">
+                  <AppLayout>
+                    <HODReview />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Department management - Admin only */}
+              <Route path="/departments" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AppLayout>
+                    <DepartmentsPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Admin panel - Admin only */}
+              <Route path="/admin" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AppLayout>
+                    <AdminPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Telegram Setup - Admin only */}
+              <Route path="/telegram-setup" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AppLayout>
+                    <TelegramSetup />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Event management - All authenticated users can view, mentors can create */}
+              <Route path="/events" element={
+                <ProtectedRoute requiredPermission="view_public_events">
+                  <AppLayout>
+                    <Events />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Conflict Resolution - Admins and Mentors can view event queue */}
+              <Route path="/conflict-resolution" element={
+                <ProtectedRoute requiredPermission="view_event_queue">
+                  <AppLayout>
+                    <ConflictResolution />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Notifications - All authenticated users */}
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <NotificationList />
+                  </AppLayout>
+                </ProtectedRoute>
+              } />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+                </DepartmentRouter>
+          </BrowserRouter>
+        </NotificationProvider>
+      </DepartmentProvider>
+    </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
+</Provider>
 );
 
 createRoot(document.getElementById("root")!).render(<App />);

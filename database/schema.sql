@@ -1,4 +1,4 @@
--- Py-Gram 2025 Database Schema
+-- Py-Gram 2k25 Database Schema
 -- Run this in your Supabase SQL editor to create the required tables
 
 -- Enable RLS (Row Level Security) by default

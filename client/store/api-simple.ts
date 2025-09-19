@@ -9,12 +9,116 @@ export interface Subject { id: number; name: string; code: string; department: s
 export interface Classroom { id: number; name: string; capacity: number; type: "Lecture" | "Lab"; has_projector: boolean; has_smartboard: boolean }
 export interface StudentBatch { id: number; name: string; year: number; semester: number; strength: number; department: string; subjects: number[] }
 export interface TimeSlot { id: number; day_of_week: string; start_time: string; end_time: string }
-export interface Timetable { id: number; name: string; status: "Draft" | "Pending Approval" | "Approved" | "Archived"; created_by: number; created_at: string; quality_score: number }
+export interface Timetable { 
+  id: number; 
+  name: string; 
+  status: "Draft" | "Pending Approval" | "Approved" | "Archived"; 
+  created_by: number; 
+  created_at: string; 
+  quality_score: number;
+  // New workflow fields
+  creator_id?: number; // Faculty Mentor 2 (Creator)
+  publisher_id?: number; // Faculty Mentor 1 (Publisher)
+  department_id?: string;
+  finalized_at?: string; // When Creator finalized the draft
+  approved_at?: string; // When Publisher approved/published
+  workflow_stage: "creation" | "finalized" | "under_review" | "published";
+  workflow_status: "draft" | "under_review" | "published" | "archived";
+  last_modified_by?: number;
+  last_modified_at?: string;
+  version: number; // For tracking versions
+}
 export interface ScheduledClass { id: number; timetable: number; subject: number; faculty: number; student_batch: number; classroom: number; timeslot: number; class_type: "Lecture" | "Lab" }
 
 export interface GenerateRequest { name: string; year: number; semester: number }
 export interface GenerateResponse { task_id: string }
 export interface GenerateStatusResponse { status: "PENDING" | "SUCCESS" | "FAILURE"; progress?: string; error?: string; new_timetable_id?: number }
+
+// New interfaces for the AI Chatbot and Workflow
+export interface ChatMessage {
+  id: string;
+  type: "user" | "ai";
+  content: string;
+  timestamp: string;
+}
+
+export interface TimetableConstraint {
+  type: "faculty_preference" | "classroom_availability" | "subject_requirement" | "break_time" | "lab_slot";
+  description: string;
+  priority: "high" | "medium" | "low";
+  data: any; // Specific constraint data
+}
+
+export interface WorkflowNotification {
+  id: string;
+  type: "draft_ready" | "published" | "updated" | "conflict_detected";
+  title: string;
+  message: string;
+  timetable_id: number;
+  from_user_id: number;
+  to_user_id: number;
+  created_at: string;
+  is_read: boolean;
+}
+
+export interface TimetableChangeLog {
+  id: string;
+  timetable_id: number;
+  user_id: number;
+  user_name: string;
+  user_role: string;
+  change_type: 'created' | 'updated' | 'finalized' | 'published' | 'class_added' | 'class_updated' | 'class_deleted' | 'modified';
+  description: string;
+  old_value?: any;
+  new_value?: any;
+  affected_entity?: string; // 'class', 'schedule', 'metadata'
+  affected_entity_id?: number;
+  timestamp: string;
+  session_id?: string; // Group related changes
+  ip_address?: string;
+  user_agent?: string;
+  changes?: any; // Backward compatibility
+}
+
+export interface TimetableVersion {
+  id: string;
+  timetable_id: number;
+  version_number: number;
+  created_by: number;
+  created_at: string;
+  description: string;
+  data_snapshot: any; // JSON snapshot of timetable state
+  change_summary: string;
+  is_major_version: boolean;
+}
+
+export interface ChangeTrackingStats {
+  total_changes: number;
+  changes_last_24h: number;
+  most_active_user: string;
+  most_common_change_type: string;
+  version_count: number;
+  last_major_version: string;
+}
+
+// New workflow request interfaces
+export interface FinalizeDraftRequest {
+  timetable_id: number;
+  message?: string;
+}
+
+export interface PublishTimetableRequest {
+  timetable_id: number;
+  approve_without_changes?: boolean;
+  modifications?: any;
+  message?: string;
+}
+
+export interface ChatGenerateRequest {
+  department_id: string;
+  messages: ChatMessage[];
+  constraints: TimetableConstraint[];
+}
 
 // Simple mock data for development
 async function handleMockRequest(urlPath: string, method: string, body?: any) {

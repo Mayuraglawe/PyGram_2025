@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .result { margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 API Endpoint Test</h1>
+    
+    <div class="test-section">
+        <h3>1. Test Basic Ping Endpoint</h3>
+        <button onclick="testPing()">Test /api/ping</button>
+        <div id="ping-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Test Telegram Status Endpoint</h3>
+        <button onclick="testTelegramStatus()">Test /api/telegram/status</button>
+        <div id="status-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Test Telegram Message Sending</h3>
+        <button onclick="testSendMessage()">Test Send Message to Principal</button>
+        <div id="message-result" class="result"></div>
+    </div>
+
+    <script>
+        async function testPing() {
+            const resultDiv = document.getElementById('ping-result');
+            resultDiv.innerHTML = '⏳ Testing...';
+            
+            try {
+                const response = await fetch('/api/ping');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `✅ SUCCESS: ${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ ERROR: ${response.status} - ${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ NETWORK ERROR: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testTelegramStatus() {
+            const resultDiv = document.getElementById('status-result');
+            resultDiv.innerHTML = '⏳ Testing...';
+            
+            try {
+                const response = await fetch('/api/telegram/status');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `✅ SUCCESS: ${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ ERROR: ${response.status} - ${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ NETWORK ERROR: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testSendMessage() {
+            const resultDiv = document.getElementById('message-result');
+            resultDiv.innerHTML = '⏳ Sending test message...';
+            
+            const testMessage = {
+                senderName: "Test Publisher",
+                senderRole: "mentor (Publisher)",
+                senderDepartment: "Computer Science",
+                message: "🧪 FRONTEND TEST MESSAGE\\n\\nThis is a test message sent from the frontend to verify that the API integration is working properly.\\n\\nTimestamp: " + new Date().toLocaleString(),
+                priority: "medium"
+            };
+            
+            try {
+                const response = await fetch('/api/telegram/send-to-principal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testMessage)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.innerHTML = `✅ MESSAGE SENT SUCCESSFULLY!\\n\\n${JSON.stringify(data, null, 2)}\\n\\n📱 Check Mayur's Telegram for the message!`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = `❌ SEND FAILED: ${response.status}\\n\\n${JSON.stringify(data, null, 2)}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `❌ NETWORK ERROR: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // Auto-run ping test when page loads
+        window.onload = function() {
+            testPing();
+        };
+    </script>
+</body>
+</html>

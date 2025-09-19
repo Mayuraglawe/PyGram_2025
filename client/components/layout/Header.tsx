@@ -1,11 +1,14 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "@/components/notifications/NotificationComponents";
 import useTheme from "@/hooks/use-theme";
-import { useSelector, useDispatch } from "react-redux";
-import type { RootState } from "@/store/store";
-import { logout } from "@/features/auth/authSlice";
-import SignInModal from "@/components/auth/SignInModal";
+import { useAuth, RoleGate, PermissionGate } from "@/contexts/AuthContext";
+import { DepartmentSwitcher, DepartmentBreadcrumb } from "@/components/routing/DepartmentRouter";
+import { Crown, Shield, GraduationCap, LogOut, User, Settings, Plus, Eye, Moon, Sun, Sparkles, Bot } from 'lucide-react';
 
 function LogoImage() {
   const [ok, setOk] = useState(true);
@@ -15,92 +18,312 @@ function LogoImage() {
       <img
         src={src}
         alt="Py-Gram logo"
-        className="h-8 w-8 rounded-md object-cover"
+        className="h-8 w-8 rounded-xl object-cover shadow-sm"
         onError={() => setOk(false)}
       />
     );
   }
-  return <div className="h-8 w-8 rounded-md bg-gradient-to-br from-primary to-secondary" />;
-}
-
-function SignInAction() {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <Button onClick={() => setOpen(true)}>Sign in</Button>
-      <SignInModal open={open} onClose={() => setOpen(false)} />
-    </>
-  );
+  return <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-primary to-blue-600 shadow-sm" />;
 }
 
 export default function Header() {
   const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-      isActive ? "bg-secondary text-secondary-foreground" : "text-foreground/80 hover:bg-accent hover:text-accent-foreground"
+    `px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105 ${
+      isActive 
+        ? "bg-gradient-to-r from-primary to-blue-600 text-white shadow-md" 
+        : "text-foreground/70 hover:bg-card hover:text-foreground hover:shadow-sm"
     }`;
 
   const { theme, toggle } = useTheme();
-  const auth = useSelector((s: RootState) => s.auth);
-  const dispatch = useDispatch();
+  const { user, logout, isAuthenticated, isCreatorMentor, isPublisherMentor } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    dispatch(logout());
-    navigate("/");
+    logout();
+    navigate("/signin");
   };
 
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'admin': return Crown;
+      case 'mentor': return Shield;
+      case 'student': return GraduationCap;
+      default: return User;
+    }
+  };
+
+  const getRoleColor = (role: string, mentorType?: string) => {
+    if (role === 'mentor' && mentorType) {
+      return mentorType === 'creator' 
+        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' 
+        : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white';
+    }
+    switch (role) {
+      case 'admin': return 'bg-gradient-to-r from-purple-500 to-pink-600 text-white';
+      case 'mentor': return 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white';
+      case 'student': return 'bg-gradient-to-r from-orange-500 to-red-600 text-white';
+      default: return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white';
+    }
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <Link to="/signin" className="flex items-center gap-3 hover:scale-105 transition-transform">
+            <LogoImage />
+            <div className="flex flex-col">
+              <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                Py-Gram 2k25
+              </span>
+              <span className="text-xs text-muted-foreground font-medium">AI-Powered Timetables</span>
+            </div>
+          </Link>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggle}
+              className="rounded-xl h-10 w-10 hover:bg-accent/60"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+            <Button asChild className="rounded-xl font-medium gradient-primary hover:scale-105 transition-transform">
+              <Link to="/signin">Sign In</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          {/* Logo: attempt to load branded image, fallback to gradient mark */}
-          {/** Image added from user attachment */}
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        <Link to="/" className="flex items-center gap-3 hover:scale-105 transition-transform">
           <LogoImage />
-          <span className="text-lg font-extrabold tracking-tight">Py-Gram 2025</span>
+          <div className="flex flex-col">
+            <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Py-Gram 2k25
+            </span>
+            <span className="text-xs text-muted-foreground font-medium">AI-Powered Timetables</span>
+          </div>
         </Link>
 
-        {/* Local inline logo component to handle load error fallback */}
+        {/* Department Breadcrumb - shows active department context */}
+        <div className="hidden lg:flex items-center">
+          <DepartmentBreadcrumb />
+        </div>
 
-        {/* Note: LogoImage defined below to avoid additional imports in top-level scope */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-2">
           <NavLink to="/" className={navLinkClass} end>
             Dashboard
           </NavLink>
-          <NavLink to="/faculty" className={navLinkClass}>Faculty</NavLink>
-          <NavLink to="/subjects" className={navLinkClass}>Subjects</NavLink>
-          <NavLink to="/classrooms" className={navLinkClass}>Classrooms</NavLink>
-          <NavLink to="/batches" className={navLinkClass}>Batches</NavLink>
-          <NavLink to="/timetables" className={navLinkClass}>Timetables</NavLink>
+          
+          <PermissionGate permission="view_public_events">
+            <NavLink to="/events" className={navLinkClass}>Events</NavLink>
+          </PermissionGate>
+          
+          <PermissionGate permission="view_event_queue">
+            <NavLink to="/conflict-resolution" className={navLinkClass}>Queue</NavLink>
+          </PermissionGate>
+          
+          <PermissionGate permission="view_department_data">
+            <NavLink to="/faculty" className={navLinkClass}>Faculty</NavLink>
+            <NavLink to="/subjects" className={navLinkClass}>Subjects</NavLink>
+            <NavLink to="/classrooms" className={navLinkClass}>Classrooms</NavLink>
+            <NavLink to="/batches" className={navLinkClass}>Batches</NavLink>
+          </PermissionGate>
+          
+          <PermissionGate permission="view_timetables">
+            <NavLink to="/timetables" className={navLinkClass}>Timetables</NavLink>
+          </PermissionGate>
+          
+          <RoleGate allowedRoles={['admin']}>
+            <NavLink to="/departments" className={navLinkClass}>Departments</NavLink>
+            <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>
+          </RoleGate>
         </nav>
-        <div className="flex items-center gap-2">
-          <button
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={toggle}
-            className="rounded-md p-2 hover:bg-accent/40"
-            title="Toggle theme"
+            className="rounded-xl h-10 w-10 hover:bg-accent/60"
           >
             {theme === "dark" ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M17.293 13.293A8 8 0 116.707 2.707 7 7 0 0017.293 13.293z" />
-              </svg>
+              <Sun className="h-4 w-4" />
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM4.22 4.22a1 1 0 011.415 0L6.64 5.22a1 1 0 11-1.415 1.415L4.22 5.636a1 1 0 010-1.415zM13.36 13.36a1 1 0 011.415 0l1.004 1.004a1 1 0 11-1.415 1.415l-1.004-1.004a1 1 0 010-1.415zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zM16 10a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1zM4.22 15.778a1 1 0 010-1.415L5.22 13.36a1 1 0 111.415 1.415L5.636 15.778a1 1 0 01-1.415 0zM13.36 6.64a1 1 0 010-1.415l1.004-1.004A1 1 0 1115.78 5.636L14.776 6.64a1 1 0 01-1.415 0zM10 6a4 4 0 100 8 4 4 0 000-8z" />
-              </svg>
+              <Moon className="h-4 w-4" />
             )}
-          </button>
-
-          <Button variant="outline" asChild>
-            <Link to="/generate">Generate</Link>
           </Button>
 
-          {auth.access ? (
-            <div className="flex items-center gap-2">
-              <div className="text-sm">Signed in</div>
-              <Button variant="ghost" onClick={handleLogout}>Logout</Button>
-            </div>
-          ) : (
-            <SignInAction />
+          <RoleGate allowedRoles={['admin']}>
+            <Button variant="outline" asChild className="rounded-xl hover:scale-105 transition-transform">
+              <Link to="/generate">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate
+              </Link>
+            </Button>
+          </RoleGate>
+
+          {/* Creator Mentor: AI Timetable Creator */}
+          {user && isCreatorMentor() && (
+            <Button asChild className="rounded-xl gradient-primary hover:scale-105 transition-transform font-medium">
+              <Link to="/timetables/create">
+                <Bot className="h-4 w-4 mr-2" />
+                AI Creator
+              </Link>
+            </Button>
+          )}
+
+          {/* Publisher Mentor: Review Queue */}
+          {user && isPublisherMentor() && (
+            <Button asChild className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 transition-transform font-medium">
+              <Link to="/timetables/review">
+                <Eye className="h-4 w-4 mr-2" />
+                Review Queue
+              </Link>
+            </Button>
+          )}
+
+          {/* Publisher Mentor: Principle Ask */}
+          {user && isPublisherMentor() && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="hidden sm:flex border-blue-200 hover:bg-blue-50 hover:border-blue-300 text-blue-700 hover:text-blue-800"
+              onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
+            >
+              <Crown className="h-4 w-4 mr-2" />
+              Chat with Principal
+            </Button>
+          )}
+
+          {/* Department Switcher - for non-admin users with multiple departments */}
+          <DepartmentSwitcher />
+
+          {/* Notification Bell */}
+          <NotificationBell onTimetableClick={(id) => navigate(`/timetables/${id}/edit`)} />
+
+          {/* Talk to Principal Button - for publishers and mentors */}
+          {(isPublisherMentor || isCreatorMentor || user?.role === 'mentor') && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="hidden sm:flex"
+              onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
+            >
+              <Crown className="h-4 w-4 mr-2" />
+              Principle Ask
+            </Button>
+          )}
+
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-12 w-12 rounded-xl hover:scale-105 transition-transform">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white font-semibold">
+                      {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-72 rounded-xl" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal p-4">
+                  <div className="flex flex-col space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white font-semibold text-lg">
+                          {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold leading-none">
+                          {user.first_name} {user.last_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Badge className={`${getRoleColor(user.role, user.mentor_type)} rounded-lg px-3 py-1`}>
+                        {(() => {
+                          const Icon = getRoleIcon(user.role);
+                          return <Icon className="h-3 w-3 mr-1" />;
+                        })()}
+                        {user.role}
+                      </Badge>
+                      {user.mentor_type && (
+                        <Badge className="rounded-lg px-3 py-1 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                          <Crown className="h-3 w-3 mr-1" />
+                          {user.mentor_type === 'creator' ? 'Creator' : 'Publisher'}
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {user.departments.length > 0 && (
+                      <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
+                        <span className="font-medium">Departments: </span>
+                        {user.departments.map(dept => dept.code).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="rounded-lg mx-2 my-1 hover:bg-accent/60">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                
+                {/* Mobile Talk to Principal Option */}
+                {(isPublisherMentor || isCreatorMentor || user?.role === 'mentor') && (
+                  <div className="sm:hidden">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full mx-2 my-1 justify-start rounded-lg"
+                      onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
+                    >
+                      <Bot className="mr-2 h-4 w-4" />
+                      Talk to Principal
+                    </Button>
+                  </div>
+                )}
+
+                {/* Mobile Principle Ask Option for Publishers */}
+                {isPublisherMentor && (
+                  <div className="sm:hidden">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full mx-2 my-1 justify-start rounded-lg border-blue-200 hover:bg-blue-50 text-blue-700"
+                      onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
+                    >
+                      <Crown className="mr-2 h-4 w-4" />
+                      Chat with Principal
+                    </Button>
+                  </div>
+                )}
+                <DropdownMenuItem className="rounded-lg mx-2 my-1 hover:bg-accent/60">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="rounded-lg mx-2 my-1 hover:bg-red-50 text-red-600 hover:text-red-700">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
