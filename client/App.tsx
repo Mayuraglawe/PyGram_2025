@@ -12,28 +12,21 @@ import { AuthProvider, ProtectedRoute } from "./contexts/AuthContext";
 import { DepartmentProvider } from "./contexts/DepartmentContext";
 import { DepartmentRouter } from "./components/routing/DepartmentRouter";
 import { NotificationProvider } from "./contexts/NotificationContext";
-import AppLayout from "@/components/layout/AppLayout";
+import SidebarLayout from "@/components/layout/SidebarLayout";
+import PublicHeader from "@/components/layout/PublicHeader";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import FacultyPage from "./pages/Faculty";
 import SubjectsPage from "./pages/Subjects";
 import ClassroomsPage from "./pages/Classrooms";
 import BatchesPage from "./pages/Batches";
-import TimetablesPage from "./pages/Timetables";
-import GeneratePage from "./pages/Generate";
 import SignInPage from "./pages/SignIn";
 import RegisterPage from "./pages/Register";
 import RoleSelectionPage from "./pages/RoleSelection";
 import DepartmentsPage from "./pages/Departments";
-import Events from './pages/Events';
-import ConflictResolution from './pages/ConflictResolution';
-import AdminPage from './pages/Admin';
-import TelegramSetup from './pages/TelegramSetup';
-import CreateTimetable from './pages/CreateTimetable';
-import TimetableEdit from './pages/TimetableEdit';
-import HODReview from './pages/HODReview';
-import AITimetableCreator from './pages/AITimetableCreator';
-import { NotificationList } from './components/notifications/NotificationComponents';
+import AdminPage from "./pages/Admin";
+import TelegramSetup from "./pages/TelegramSetup";
+import { NotificationList } from "./components/notifications/NotificationComponents";
 
 const queryClient = new QueryClient();
 
@@ -50,160 +43,103 @@ const App = () => (
                 <DepartmentRouter>
             <Routes>
               {/* Public routes */}
-              <Route path="/role-selection" element={<RoleSelectionPage />} />
-              <Route path="/signin" element={<SignInPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/role-selection" element={
+                <div className="min-h-screen bg-background">
+                  <PublicHeader />
+                  <RoleSelectionPage />
+                </div>
+              } />
+              <Route path="/signin" element={
+                <div className="min-h-screen bg-background">
+                  <PublicHeader />
+                  <SignInPage />
+                </div>
+              } />
+              <Route path="/register" element={
+                <div className="min-h-screen bg-background">
+                  <PublicHeader />
+                  <RegisterPage />
+                </div>
+              } />
               
-              {/* Protected routes - all wrapped with AppLayout */}
+              {/* Protected routes - all wrapped with SidebarLayout */}
               <Route path="/" element={
                 <ProtectedRoute>
-                  <AppLayout>
+                  <SidebarLayout>
                     <Index />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Faculty management - Admin and Mentors only */}
               <Route path="/faculty" element={
                 <ProtectedRoute requiredPermission="view_department_data">
-                  <AppLayout>
+                  <SidebarLayout>
                     <FacultyPage />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Subjects management - Admin and Mentors only */}
               <Route path="/subjects" element={
                 <ProtectedRoute requiredPermission="view_department_data">
-                  <AppLayout>
+                  <SidebarLayout>
                     <SubjectsPage />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Classrooms management - Admin and Mentors only */}
               <Route path="/classrooms" element={
                 <ProtectedRoute requiredPermission="view_department_data">
-                  <AppLayout>
+                  <SidebarLayout>
                     <ClassroomsPage />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Batches management - Admin and Mentors only */}
               <Route path="/batches" element={
                 <ProtectedRoute requiredPermission="view_department_data">
-                  <AppLayout>
+                  <SidebarLayout>
                     <BatchesPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Timetables - All authenticated users can view */}
-              <Route path="/timetables" element={
-                <ProtectedRoute requiredPermission="view_timetables">
-                  <AppLayout>
-                    <TimetablesPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Generate timetables - Admin only */}
-              <Route path="/generate" element={
-                <ProtectedRoute requiredRole="admin">
-                  <AppLayout>
-                    <GeneratePage />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Create timetables - Now uses AI Creator (Creator Mentors only) */}
-              <Route path="/timetables/create" element={
-                <ProtectedRoute requiredPermission="create_timetable_drafts">
-                  <AppLayout>
-                    <AITimetableCreator />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* AI Timetable Creator - Alternate route */}
-              <Route path="/timetables/ai-create" element={
-                <ProtectedRoute requiredPermission="create_timetable_drafts">
-                  <AppLayout>
-                    <AITimetableCreator />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Edit timetables - Creator and Publisher Mentors */}
-              <Route path="/timetables/:id/edit" element={
-                <ProtectedRoute requiredPermission="edit_timetables">
-                  <AppLayout>
-                    <TimetableEdit />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Publisher Review Queue - Publisher Mentors only */}
-              <Route path="/timetables/review" element={
-                <ProtectedRoute requiredPermission="publish_timetables">
-                  <AppLayout>
-                    <HODReview />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Department management - Admin only */}
               <Route path="/departments" element={
                 <ProtectedRoute requiredRole="admin">
-                  <AppLayout>
+                  <SidebarLayout>
                     <DepartmentsPage />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Admin panel - Admin only */}
               <Route path="/admin" element={
                 <ProtectedRoute requiredRole="admin">
-                  <AppLayout>
+                  <SidebarLayout>
                     <AdminPage />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Telegram Setup - Admin only */}
               <Route path="/telegram-setup" element={
                 <ProtectedRoute requiredRole="admin">
-                  <AppLayout>
+                  <SidebarLayout>
                     <TelegramSetup />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Event management - All authenticated users can view, mentors can create */}
-              <Route path="/events" element={
-                <ProtectedRoute requiredPermission="view_public_events">
-                  <AppLayout>
-                    <Events />
-                  </AppLayout>
-                </ProtectedRoute>
-              } />
-              
-              {/* Conflict Resolution - Admins and Mentors can view event queue */}
-              <Route path="/conflict-resolution" element={
-                <ProtectedRoute requiredPermission="view_event_queue">
-                  <AppLayout>
-                    <ConflictResolution />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               
               {/* Notifications - All authenticated users */}
               <Route path="/notifications" element={
                 <ProtectedRoute>
-                  <AppLayout>
+                  <SidebarLayout>
                     <NotificationList />
-                  </AppLayout>
+                  </SidebarLayout>
                 </ProtectedRoute>
               } />
               

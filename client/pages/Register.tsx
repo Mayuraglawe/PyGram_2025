@@ -138,10 +138,18 @@ export default function Register() {
   const preSelectedRole = searchParams.get('role');
   const errorParam = searchParams.get('error');
 
-  // Get role options based on pre-selected role or show all
+  // Redirect admin registration attempts to signin
+  useEffect(() => {
+    if (preSelectedRole === 'admin') {
+      navigate('/signin?role=admin');
+      return;
+    }
+  }, [preSelectedRole, navigate]);
+
+  // Get role options based on pre-selected role or show all (exclude admin)
   const roleOptions = preSelectedRole 
-    ? [preSelectedRole] 
-    : ['student', 'creator', 'publisher', 'admin'];
+    ? preSelectedRole === 'admin' ? [] : [preSelectedRole] // No admin registration
+    : ['student', 'creator', 'publisher']; // Removed 'admin'
 
   // Check if user was redirected here due to missing department
   const needsDepartment = errorParam === 'no-department';

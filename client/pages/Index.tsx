@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartment } from "@/contexts/DepartmentContext";
@@ -9,7 +10,6 @@ import {
   Sparkles, 
   Clock, 
   Users, 
-  Calendar, 
   TrendingUp, 
   Zap,
   Bot,
@@ -17,11 +17,11 @@ import {
   CheckCircle,
   ArrowRight,
   PlusCircle,
-  Eye,
   Building2,
-  Crown
+  Crown,
+  Activity,
+  BarChart3
 } from "lucide-react";
-import TimetableCard from "@/components/timetable/TimetableCard";
 import WorkflowStatus from "@/components/workflow/WorkflowStatus";
 
 export default function Index() {
@@ -41,46 +41,11 @@ export default function Index() {
   // Admin dashboard or fallback for users without departments
 
   // Mock data for demonstration
-  const recentTimetables = [
-    {
-      id: 1,
-      title: "CS Third Semester - Fall 2024",
-      department: "Computer Science",
-      semester: "Fall 2024",
-      status: "published" as const,
-      workflow_stage: "published" as const,
-      creator: { name: "Dr. Smith", role: "Creator Mentor" },
-      publisher: { name: "Prof. Johnson", role: "Publisher Mentor" },
-      qualityScore: 0.94,
-      lastUpdated: "2024-01-15T10:30:00Z",
-      subjectCount: 7,
-      conflictCount: 0,
-      isLive: true,
-      canEdit: isCreatorMentor(),
-      canReview: isPublisherMentor()
-    },
-    {
-      id: 2,
-      title: "CS Fourth Semester - Spring 2024",
-      department: "Computer Science", 
-      semester: "Spring 2024",
-      status: "pending_review" as const,
-      workflow_stage: "review" as const,
-      creator: { name: "Dr. Wilson", role: "Creator Mentor" },
-      qualityScore: 0.89,
-      lastUpdated: "2024-01-14T15:45:00Z",
-      subjectCount: 8,
-      conflictCount: 2,
-      canEdit: isCreatorMentor(),
-      canReview: isPublisherMentor()
-    }
-  ];
-
   const stats = [
-    { label: "Active Timetables", value: "12", icon: Calendar, color: "text-blue-600" },
-    { label: "Quality Score", value: "94%", icon: TrendingUp, color: "text-green-600" },
-    { label: "Faculty Members", value: "24", icon: Users, color: "text-purple-600" },
-    { label: "Avg. Generation Time", value: "3.2s", icon: Clock, color: "text-orange-600" }
+    { icon: Shield, label: 'Active Departments', value: '8', color: 'text-blue-600' },
+    { icon: CheckCircle, label: 'Classrooms Available', value: '45', color: 'text-green-600' },
+    { icon: Bot, label: 'Faculty Members', value: '128', color: 'text-purple-600' },
+    { icon: Crown, label: 'Total Students', value: '1,250', color: 'text-orange-600' }
   ];
 
   return (
@@ -106,39 +71,21 @@ export default function Index() {
           </p>
           
           <div className="mt-8 flex flex-wrap gap-4">
-            {user && isCreatorMentor() && (
-              <Button asChild size="lg" className="rounded-2xl gradient-primary text-white font-semibold hover:scale-105 transition-transform">
-                <Link to="/timetables/create">
-                  <Bot className="h-5 w-5 mr-2" />
-                  Create with AI Assistant
-                </Link>
+            {user && isPublisherMentor() && (
+              <Button 
+                size="lg" 
+                className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold hover:scale-105 transition-transform"
+                onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
+              >
+                <Crown className="h-4 w-4 mr-2" />
+                Chat with Principal
               </Button>
             )}
             
-            {user && isPublisherMentor() && (
-              <>
-                <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:scale-105 transition-transform">
-                  <Link to="/timetables/review">
-                    <Shield className="h-5 w-5 mr-2" />
-                    Review Queue
-                  </Link>
-                </Button>
-                
-                <Button 
-                  size="lg" 
-                  className="rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold hover:scale-105 transition-transform"
-                  onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
-                >
-                  <Crown className="h-4 w-4 mr-2" />
-                  Chat with Principal
-                </Button>
-              </>
-            )}
-            
             <Button asChild size="lg" variant="outline" className="rounded-2xl border-2 hover:scale-105 transition-transform">
-              <Link to="/timetables">
-                <Eye className="h-5 w-5 mr-2" />
-                View Timetables
+              <Link to="/departments">
+                <Shield className="h-5 w-5 mr-2" />
+                Manage Departments
               </Link>
             </Button>
           </div>
@@ -175,110 +122,56 @@ export default function Index() {
               Quick Actions
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {isCreatorMentor() && (
-                <Card className="modern-card group cursor-pointer">
-                  <Link to="/timetables/create">
-                    <CardContent className="p-6 text-center">
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                        <Bot className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">AI Timetable Creator</h3>
-                      <p className="text-sm text-muted-foreground">Create timetables from scratch with AI guidance and drag-and-drop</p>
-                      <ArrowRight className="h-4 w-4 mt-4 mx-auto text-primary group-hover:translate-x-1 transition-transform" />
-                    </CardContent>
-                  </Link>
-                </Card>
-              )}
+              <Card className="modern-card group cursor-pointer">
+                <Link to="/departments">
+                  <CardContent className="p-6 text-center">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Shield className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Manage Departments</h3>
+                    <p className="text-sm text-muted-foreground">View and manage all departmental information, classrooms, and faculty</p>
+                    <ArrowRight className="h-4 w-4 mt-4 mx-auto text-primary group-hover:translate-x-1 transition-transform" />
+                  </CardContent>
+                </Link>
+              </Card>
 
               {isPublisherMentor() && (
-                <>
-                  <Card className="modern-card group cursor-pointer">
-                    <Link to="/timetables/review">
-                      <CardContent className="p-6 text-center">
-                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                          <Shield className="h-8 w-8 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">Review Pending</h3>
-                        <p className="text-sm text-muted-foreground">Approve or provide feedback on submitted timetables</p>
-                        <ArrowRight className="h-4 w-4 mt-4 mx-auto text-green-600 group-hover:translate-x-1 transition-transform" />
-                      </CardContent>
-                    </Link>
-                  </Card>
-
-                  <Card className="modern-card group cursor-pointer">
-                    <CardContent className="p-6 text-center">
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                        <Crown className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">Principle Ask</h3>
-                      <p className="text-sm text-muted-foreground mb-4">Direct communication channel to the Principal via Telegram</p>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="w-full border-blue-200 hover:bg-blue-50 text-blue-700 hover:text-blue-800"
-                        onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
-                      >
-                        <Crown className="h-4 w-4 mr-2" />
-                        Send Message
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
-
-              {isPublisherMentor() && !(isCreatorMentor()) && (
                 <Card className="modern-card group cursor-pointer">
-                  <Link to="/timetables">
-                    <CardContent className="p-6 text-center">
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                        <Calendar className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">View All Timetables</h3>
-                      <p className="text-sm text-muted-foreground">Browse and manage existing timetables</p>
-                      <ArrowRight className="h-4 w-4 mt-4 mx-auto text-purple-600 group-hover:translate-x-1 transition-transform" />
-                    </CardContent>
-                  </Link>
+                  <CardContent className="p-6 text-center">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Crown className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Principle Ask</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Direct communication channel to the Principal via Telegram</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="w-full border-blue-200 hover:bg-blue-50 text-blue-700 hover:text-blue-800"
+                      onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
+                    >
+                      <Crown className="h-4 w-4 mr-2" />
+                      Send Message
+                    </Button>
+                  </CardContent>
                 </Card>
               )}
 
-              {!isPublisherMentor() && (
-                <Card className="modern-card group cursor-pointer">
-                  <Link to="/timetables">
-                    <CardContent className="p-6 text-center">
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                        <Calendar className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-lg font-semibold mb-2">View All Timetables</h3>
-                      <p className="text-sm text-muted-foreground">Browse and manage existing timetables</p>
-                      <ArrowRight className="h-4 w-4 mt-4 mx-auto text-purple-600 group-hover:translate-x-1 transition-transform" />
-                    </CardContent>
-                  </Link>
-                </Card>
-              )}
-            </div>
-          </section>
-
-          {/* Recent Timetables */}
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold flex items-center gap-3">
-                <Calendar className="h-6 w-6 text-primary" />
-                Recent Timetables
-              </h2>
-              <Button asChild variant="outline" className="rounded-xl">
-                <Link to="/timetables">
-                  View All
-                  <ArrowRight className="h-4 w-4 ml-2" />
+              <Card className="modern-card group cursor-pointer">
+                <Link to="/admin">
+                  <CardContent className="p-6 text-center">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                      <Bot className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Admin Panel</h3>
+                    <p className="text-sm text-muted-foreground">Access administrative features and system settings</p>
+                    <ArrowRight className="h-4 w-4 mt-4 mx-auto text-purple-600 group-hover:translate-x-1 transition-transform" />
+                  </CardContent>
                 </Link>
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {recentTimetables.map((timetable) => (
-                <TimetableCard key={timetable.id} {...timetable} />
-              ))}
+              </Card>
             </div>
           </section>
+
+
 
           {/* Workflow Status Example */}
           <section>
@@ -315,41 +208,41 @@ export default function Index() {
         <h2 className="text-3xl font-bold text-center mb-12">Powered by Advanced Technology</h2>
         <div className="grid gap-8 md:grid-cols-3">
           <FeatureCard 
-            title="AI-Powered Generation" 
-            subtitle="ChatGPT-style Interface"
-            icon={Bot}
+            title="Department Management" 
+            subtitle="Comprehensive Organization"
+            icon={Shield}
             color="from-blue-500 to-indigo-600"
           >
             <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-              <li>Natural language timetable creation</li>
-              <li>Intelligent constraint optimization</li>
-              <li>Real-time conflict resolution</li>
+              <li>Complete departmental overview</li>
+              <li>Classroom and faculty management</li>
+              <li>Subject allocation tracking</li>
             </ul>
           </FeatureCard>
           
           <FeatureCard 
-            title="Hybrid CSP + GA" 
-            subtitle="Optimal Scheduling Algorithm"
-            icon={Zap}
+            title="Smart Communication" 
+            subtitle="Direct Principal Access"
+            icon={Crown}
             color="from-green-500 to-emerald-600"
           >
             <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-              <li>Phase 1: OR-Tools CP-SAT for feasibility</li>
-              <li>Phase 2: Genetic Algorithm optimization</li>
-              <li>Continuous validity checks</li>
+              <li>Telegram-based messaging system</li>
+              <li>Real-time notifications</li>
+              <li>Secure communication channels</li>
             </ul>
           </FeatureCard>
           
           <FeatureCard 
-            title="Smart Workflow" 
-            subtitle="Creator → Publisher Process"
-            icon={Shield}
+            title="Role-Based Access" 
+            subtitle="Secure & Organized"
+            icon={Bot}
             color="from-purple-500 to-pink-600"
           >
             <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
-              <li>Role-based access control</li>
-              <li>Real-time status tracking</li>
-              <li>Collaborative editing & approval</li>
+              <li>Multi-level user permissions</li>
+              <li>Department-specific access</li>
+              <li>Secure authentication system</li>
             </ul>
           </FeatureCard>
         </div>

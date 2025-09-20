@@ -8,7 +8,7 @@ import { NotificationBell } from "@/components/notifications/NotificationCompone
 import useTheme from "@/hooks/use-theme";
 import { useAuth, RoleGate, PermissionGate } from "@/contexts/AuthContext";
 import { DepartmentSwitcher, DepartmentBreadcrumb } from "@/components/routing/DepartmentRouter";
-import { Crown, Shield, GraduationCap, LogOut, User, Settings, Plus, Eye, Moon, Sun, Sparkles, Bot } from 'lucide-react';
+import { Crown, Shield, GraduationCap, LogOut, User, Settings, Moon, Sun, Bot } from 'lucide-react';
 
 function LogoImage() {
   const [ok, setOk] = useState(true);
@@ -124,23 +124,11 @@ export default function Header() {
             Dashboard
           </NavLink>
           
-          <PermissionGate permission="view_public_events">
-            <NavLink to="/events" className={navLinkClass}>Events</NavLink>
-          </PermissionGate>
-          
-          <PermissionGate permission="view_event_queue">
-            <NavLink to="/conflict-resolution" className={navLinkClass}>Queue</NavLink>
-          </PermissionGate>
-          
           <PermissionGate permission="view_department_data">
             <NavLink to="/faculty" className={navLinkClass}>Faculty</NavLink>
             <NavLink to="/subjects" className={navLinkClass}>Subjects</NavLink>
             <NavLink to="/classrooms" className={navLinkClass}>Classrooms</NavLink>
             <NavLink to="/batches" className={navLinkClass}>Batches</NavLink>
-          </PermissionGate>
-          
-          <PermissionGate permission="view_timetables">
-            <NavLink to="/timetables" className={navLinkClass}>Timetables</NavLink>
           </PermissionGate>
           
           <RoleGate allowedRoles={['admin']}>
@@ -165,32 +153,12 @@ export default function Header() {
 
           <RoleGate allowedRoles={['admin']}>
             <Button variant="outline" asChild className="rounded-xl hover:scale-105 transition-transform">
-              <Link to="/generate">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate
+              <Link to="/admin">
+                <Shield className="h-4 w-4 mr-2" />
+                Admin Panel
               </Link>
             </Button>
           </RoleGate>
-
-          {/* Creator Mentor: AI Timetable Creator */}
-          {user && isCreatorMentor() && (
-            <Button asChild className="rounded-xl gradient-primary hover:scale-105 transition-transform font-medium">
-              <Link to="/timetables/create">
-                <Bot className="h-4 w-4 mr-2" />
-                AI Creator
-              </Link>
-            </Button>
-          )}
-
-          {/* Publisher Mentor: Review Queue */}
-          {user && isPublisherMentor() && (
-            <Button asChild className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 transition-transform font-medium">
-              <Link to="/timetables/review">
-                <Eye className="h-4 w-4 mr-2" />
-                Review Queue
-              </Link>
-            </Button>
-          )}
 
           {/* Publisher Mentor: Principle Ask */}
           {user && isPublisherMentor() && (
@@ -209,7 +177,7 @@ export default function Header() {
           <DepartmentSwitcher />
 
           {/* Notification Bell */}
-          <NotificationBell onTimetableClick={(id) => navigate(`/timetables/${id}/edit`)} />
+          <NotificationBell />
 
           {/* Talk to Principal Button - for publishers and mentors */}
           {(isPublisherMentor || isCreatorMentor || user?.role === 'mentor') && (

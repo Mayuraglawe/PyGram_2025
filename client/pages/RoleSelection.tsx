@@ -232,15 +232,31 @@ export default function RoleSelection() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 
-                <Button 
-                  onClick={handleProceedToRegister}
-                  size="lg"
-                  className="flex-1 max-w-xs"
-                >
-                  <GraduationCap className="mr-2 h-4 w-4" />
-                  Register as {selectedRoleData.title}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                {/* Only show register button for non-admin roles */}
+                {selectedRole !== 'admin' && (
+                  <Button 
+                    onClick={handleProceedToRegister}
+                    size="lg"
+                    className="flex-1 max-w-xs"
+                  >
+                    <GraduationCap className="mr-2 h-4 w-4" />
+                    Register as {selectedRoleData.title}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
+                
+                {/* Admin-specific message */}
+                {selectedRole === 'admin' && (
+                  <div className="flex-1 max-w-xs p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                    <div className="text-center">
+                      <Crown className="h-5 w-5 mx-auto mb-2 text-purple-600" />
+                      <p className="text-sm text-purple-800 font-medium">Administrator Access</p>
+                      <p className="text-xs text-purple-600 mt-1">
+                        Registration not available. Use sign-in with provided credentials.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="mt-4 text-center">

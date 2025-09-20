@@ -151,6 +151,127 @@
 }
 
 @layer components {
+  /* Sidebar-specific styling */
+  .sidebar-nav-item {
+    @apply flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105 group relative;
+  }
+
+  .sidebar-nav-item.active {
+    @apply bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg;
+  }
+
+  .sidebar-nav-item:not(.active) {
+    @apply text-foreground/70 hover:bg-accent hover:text-foreground;
+  }
+
+  .sidebar-collapsed {
+    @apply w-16;
+  }
+
+  .sidebar-expanded {
+    @apply w-64;
+  }
+
+  /* Professional layout styling */
+  .main-content {
+    @apply flex-1 min-h-screen bg-gradient-to-br from-background via-muted/30 to-background;
+  }
+
+  .page-container {
+    @apply container mx-auto py-8 px-6 lg:px-8 max-w-7xl;
+  }
+
+  .page-header {
+    @apply mb-8 space-y-2;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent;
+  }
+
+  .page-description {
+    @apply text-muted-foreground text-lg;
+  }
+
+  /* Enhanced card styling */
+  .professional-card {
+    @apply bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl p-6 transition-all duration-300 hover:shadow-xl hover:border-primary/20 hover:-translate-y-1 hover:bg-card/80;
+  }
+
+  /* Modern form styling */
+  .form-section {
+    @apply space-y-6 bg-card/40 backdrop-blur-sm rounded-xl p-6 border border-border/30;
+  }
+
+  .form-header {
+    @apply border-b border-border/30 pb-4 mb-6;
+  }
+
+  .form-title {
+    @apply text-xl font-semibold text-foreground;
+  }
+
+  .form-description {
+    @apply text-muted-foreground text-sm mt-1;
+  }
+
+  /* Enhanced button styling */
+  .btn-glass {
+    @apply bg-background/60 backdrop-blur-sm border border-border/50 hover:bg-background/80 hover:border-border/70 transition-all duration-200;
+  }
+
+  .btn-outline-modern {
+    @apply border-2 border-border/30 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200;
+  }
+
+  /* Custom scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thumb-border {
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-track-transparent {
+    scrollbar-track-color: transparent;
+  }
+
+  /* WebKit scrollbar styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--border) / 0.8);
+  }
+
+  /* Status indicators with better contrast */
+  .status-indicator {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border;
+  }
+
+  .status-online {
+    @apply bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800;
+  }
+
+  .status-offline {
+    @apply bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:border-gray-800;
+  }
+
+  .status-busy {
+    @apply bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800;
+  }
+
   /* ChatGPT-style message bubbles */
   .chat-message-user {
     @apply bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl px-4 py-3 max-w-[85%] ml-auto;
