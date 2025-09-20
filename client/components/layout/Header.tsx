@@ -115,39 +115,9 @@ export default function Header() {
         </Link>
 
         {/* Department Breadcrumb - shows active department context */}
-        <div className="hidden lg:flex items-center">
+        <div className="hidden lg:flex items-center flex-1 justify-center">
           <DepartmentBreadcrumb />
         </div>
-
-        <nav className="hidden md:flex items-center gap-2">
-          <NavLink to="/" className={navLinkClass} end>
-            Dashboard
-          </NavLink>
-          
-          <PermissionGate permission="view_public_events">
-            <NavLink to="/events" className={navLinkClass}>Events</NavLink>
-          </PermissionGate>
-          
-          <PermissionGate permission="view_event_queue">
-            <NavLink to="/conflict-resolution" className={navLinkClass}>Queue</NavLink>
-          </PermissionGate>
-          
-          <PermissionGate permission="view_department_data">
-            <NavLink to="/faculty" className={navLinkClass}>Faculty</NavLink>
-            <NavLink to="/subjects" className={navLinkClass}>Subjects</NavLink>
-            <NavLink to="/classrooms" className={navLinkClass}>Classrooms</NavLink>
-            <NavLink to="/batches" className={navLinkClass}>Batches</NavLink>
-          </PermissionGate>
-          
-          <PermissionGate permission="view_timetables">
-            <NavLink to="/timetables" className={navLinkClass}>Timetables</NavLink>
-          </PermissionGate>
-          
-          <RoleGate allowedRoles={['admin']}>
-            <NavLink to="/departments" className={navLinkClass}>Departments</NavLink>
-            <NavLink to="/admin" className={navLinkClass}>Admin</NavLink>
-          </RoleGate>
-        </nav>
         
         <div className="flex items-center gap-3">
           <Button
@@ -163,66 +133,13 @@ export default function Header() {
             )}
           </Button>
 
-          <RoleGate allowedRoles={['admin']}>
-            <Button variant="outline" asChild className="rounded-xl hover:scale-105 transition-transform">
-              <Link to="/generate">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate
-              </Link>
-            </Button>
-          </RoleGate>
-
-          {/* Creator Mentor: AI Timetable Creator */}
-          {user && isCreatorMentor() && (
-            <Button asChild className="rounded-xl gradient-primary hover:scale-105 transition-transform font-medium">
-              <Link to="/timetables/create">
-                <Bot className="h-4 w-4 mr-2" />
-                AI Creator
-              </Link>
-            </Button>
-          )}
-
-          {/* Publisher Mentor: Review Queue */}
-          {user && isPublisherMentor() && (
-            <Button asChild className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 transition-transform font-medium">
-              <Link to="/timetables/review">
-                <Eye className="h-4 w-4 mr-2" />
-                Review Queue
-              </Link>
-            </Button>
-          )}
-
-          {/* Publisher Mentor: Principle Ask */}
-          {user && isPublisherMentor() && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="hidden sm:flex border-blue-200 hover:bg-blue-50 hover:border-blue-300 text-blue-700 hover:text-blue-800"
-              onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
-            >
-              <Crown className="h-4 w-4 mr-2" />
-              Chat with Principal
-            </Button>
-          )}
-
           {/* Department Switcher - for non-admin users with multiple departments */}
           <DepartmentSwitcher />
 
           {/* Notification Bell */}
           <NotificationBell onTimetableClick={(id) => navigate(`/timetables/${id}/edit`)} />
 
-          {/* Talk to Principal Button - for publishers and mentors */}
-          {(isPublisherMentor || isCreatorMentor || user?.role === 'mentor') && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="hidden sm:flex"
-              onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
-            >
-              <Crown className="h-4 w-4 mr-2" />
-              Principle Ask
-            </Button>
-          )}
+
 
           {user && (
             <DropdownMenu>
@@ -283,36 +200,7 @@ export default function Header() {
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </DropdownMenuItem>
-                
-                {/* Mobile Talk to Principal Option */}
-                {(isPublisherMentor || isCreatorMentor || user?.role === 'mentor') && (
-                  <div className="sm:hidden">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full mx-2 my-1 justify-start rounded-lg"
-                      onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
-                    >
-                      <Bot className="mr-2 h-4 w-4" />
-                      Talk to Principal
-                    </Button>
-                  </div>
-                )}
 
-                {/* Mobile Principle Ask Option for Publishers */}
-                {isPublisherMentor && (
-                  <div className="sm:hidden">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full mx-2 my-1 justify-start rounded-lg border-blue-200 hover:bg-blue-50 text-blue-700"
-                      onClick={() => window.open('/principle-chat-gpt.html', '_blank')}
-                    >
-                      <Crown className="mr-2 h-4 w-4" />
-                      Chat with Principal
-                    </Button>
-                  </div>
-                )}
                 <DropdownMenuItem className="rounded-lg mx-2 my-1 hover:bg-accent/60">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>

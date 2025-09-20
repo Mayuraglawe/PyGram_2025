@@ -96,6 +96,9 @@ export default function SignInPage() {
     } else if (preSelectedRole === 'publisher') {
       setUsername('pygram2k25');
       setPassword('pygram2k25');
+    } else if (preSelectedRole === 'admin') {
+      setUsername('Admin');
+      setPassword('Admin@123');
     }
   }, [preSelectedRole]);
 
@@ -145,8 +148,8 @@ export default function SignInPage() {
     e.preventDefault();
     setError('');
 
-    // Validate department selection
-    if (!selectedDepartment) {
+    // Validate department selection (skip for admin users)
+    if (preSelectedRole !== 'admin' && !selectedDepartment) {
       setError('Please select your department to continue.');
       return;
     }
@@ -154,7 +157,7 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
-      // Pass the role for Creator/Publisher handling
+      // Pass the role for Creator/Publisher/Admin handling
       const roleForLogin = preSelectedRole as 'admin' | 'creator' | 'publisher' | 'student' | undefined;
       const success = await login(username, password, roleForLogin);
       if (success) {
@@ -261,41 +264,57 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              {/* Department Selection */}
-              <div>
-                <Label htmlFor="department">Department</Label>
-                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem key={dept.id} value={dept.id}>
-                        <div className="flex items-center space-x-2">
-                          <div 
-                            className="w-3 h-3 rounded-full bg-blue-500" 
-                            data-color={dept.colorTheme}
-                          />
-                          <span className="font-medium">{dept.code}</span>
-                          <span className="text-muted-foreground">- {dept.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedDepartment && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                    <div className="flex items-center space-x-2 text-sm text-blue-800">
-                      <Building2 className="h-4 w-4" />
-                      <span className="font-medium">Department Workspace:</span>
-                      <span>{departments.find(d => d.id === selectedDepartment)?.name}</span>
+              {/* Department Selection - Hide for admin users */}
+              {preSelectedRole !== 'admin' && (
+                <div>
+                  <Label htmlFor="department">Department</Label>
+                  <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id}>
+                          <div className="flex items-center space-x-2">
+                            <div 
+                              className="w-3 h-3 rounded-full bg-blue-500" 
+                              data-color={dept.colorTheme}
+                            />
+                            <span className="font-medium">{dept.code}</span>
+                            <span className="text-muted-foreground">- {dept.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedDepartment && (
+                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
+                      <div className="flex items-center space-x-2 text-sm text-blue-800">
+                        <Building2 className="h-4 w-4" />
+                        <span className="font-medium">Department Workspace:</span>
+                        <span>{departments.find(d => d.id === selectedDepartment)?.name}</span>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-1">
+                        You will only see content from this department after signing in.
+                      </p>
                     </div>
-                    <p className="text-xs text-blue-600 mt-1">
-                      You will only see content from this department after signing in.
-                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Show admin access notice */}
+              {preSelectedRole === 'admin' && (
+                <div className="mt-2 p-3 bg-purple-50 border border-purple-200 rounded-md">
+                  <div className="flex items-center space-x-2 text-sm text-purple-800">
+                    <Crown className="h-4 w-4" />
+                    <span className="font-medium">Administrator Access:</span>
+                    <span>All departments and system features</span>
                   </div>
-                )}
-              </div>
+                  <p className="text-xs text-purple-600 mt-1">
+                    You have full access to all departments and administrative features.
+                  </p>
+                </div>
+              )}
               
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
@@ -326,6 +345,10 @@ export default function SignInPage() {
             <CardContent className="p-4">
               <h4 className="font-medium text-gray-900 mb-3">Demo Accounts:</h4>
               <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex justify-between">
+                  <span>Admin:</span>
+                  <code className="text-xs bg-white px-1 rounded">Admin / Admin@123</code>
+                </div>
                 <div className="flex justify-between">
                   <span>Creator:</span>
                   <code className="text-xs bg-white px-1 rounded">Pygram2k25 / Pygram2k25</code>

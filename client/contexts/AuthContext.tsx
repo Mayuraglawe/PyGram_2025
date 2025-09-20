@@ -110,6 +110,16 @@ const mockUsers: User[] = [
     departments: [] // Admins have access to all departments
   },
   {
+    id: 'admin_hardcoded',
+    username: 'Admin',
+    email: 'admin@college.edu',
+    role: 'admin',
+    first_name: 'System',
+    last_name: 'Administrator',
+    is_active: true,
+    departments: [] // Admins have access to all departments
+  },
+  {
     id: '2',
     username: 'Pygram2k25',
     email: 'creator@college.edu',
@@ -260,6 +270,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Handle Admin role with hardcoded credentials
+    if (username === 'Admin' && password === 'Admin@123') {
+      const adminUser: User = {
+        id: 'admin_hardcoded',
+        username: 'Admin',
+        email: 'admin@college.edu',
+        role: 'admin',
+        first_name: 'System',
+        last_name: 'Administrator',
+        is_active: true,
+        departments: [] // Admins have access to all departments
+      };
+      
+      const authToken = `admin_token_${Date.now()}`;
+      
+      setUser(adminUser);
+      localStorage.setItem('auth_user', JSON.stringify(adminUser));
+      localStorage.setItem('auth_token', authToken);
+      
+      setIsLoading(false);
+      return true;
+    }
+
     // Handle Creator role
     if (username === 'Pygram2k25' && password === 'Pygram2k25') {
       const creatorUser: User = {

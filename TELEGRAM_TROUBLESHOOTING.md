@@ -85,8 +85,8 @@ If fails: Network routing issue
 
 If you can't fix network issues immediately, you can still test the UI:
 
-1. The Principle Ask button works perfectly for UI testing
-2. Modal opens, form validation works
+1. The frontend components work perfectly for UI testing
+2. Modal dialogs open, form validation works
 3. You'll see a network error when sending
 4. This confirms the frontend is working correctly
 
@@ -115,7 +115,7 @@ When network is fixed, you should see:
 ✅ Telegram bot initialized successfully: @Principle_Pygram_bot
 ✅ Telegram service initialized successfully
 
-Then messages from Principle Ask will reach the bot instantly!
+Then messages from the frontend will reach the bot instantly!
 
 🔍 CURRENT STATUS:
 =================

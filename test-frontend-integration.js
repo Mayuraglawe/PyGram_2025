@@ -5,7 +5,7 @@
  * Tests the complete frontend-to-backend-to-Telegram flow
  */
 
-console.log('🧪 FRONTEND INTEGRATION TEST: Principle Ask Button\n');
+console.log('🧪 FRONTEND INTEGRATION TEST: Frontend Components\n');
 
 // Test the API endpoints that the frontend will call
 async function testFrontendIntegration() {
@@ -57,7 +57,7 @@ async function testFrontendIntegration() {
     senderName: "Test Publisher",
     senderRole: "mentor (Publisher)", 
     senderDepartment: "Computer Science",
-    message: "📋 General Query\n\n🧪 FRONTEND INTEGRATION TEST\n\nThis message was sent from the frontend Principle Ask button to test the complete integration with @Principle_Pygram_bot.\n\nTimestamp: " + new Date().toLocaleString(),
+    message: "📋 General Query\n\n🧪 FRONTEND INTEGRATION TEST\n\nThis is a general test message for frontend functionality.\n\nTimestamp: " + new Date().toLocaleString(),
     priority: "medium"
   };
 
@@ -97,22 +97,15 @@ function testComponentIntegration() {
   try {
     const fs = require('fs');
     
-    // Check if PrincipleAskButton exists and has correct API endpoint
-    const componentContent = fs.readFileSync('client/components/communication/PrincipleAskButton.tsx', 'utf8');
+    // Check basic component structure
     const headerContent = fs.readFileSync('client/components/layout/Header.tsx', 'utf8');
     const indexContent = fs.readFileSync('client/pages/Index.tsx', 'utf8');
     
     const checks = [
-      { name: 'PrincipleAskButton exists', pass: componentContent.includes('PrincipleAskButton') },
-      { name: 'Uses correct API endpoint', pass: componentContent.includes('/api/telegram/send-to-principal') },
-      { name: 'Imported in Header', pass: headerContent.includes('PrincipleAskButton') },
-      { name: 'Used in Header', pass: headerContent.includes('<PrincipleAskButton') },
-      { name: 'Imported in Index', pass: indexContent.includes('PrincipleAskButton') },
-      { name: 'Used in Index', pass: indexContent.includes('<PrincipleAskButton') },
-      { name: 'Has Crown icon', pass: componentContent.includes('Crown') },
-      { name: 'Has message categories', pass: componentContent.includes('general') && componentContent.includes('urgent') },
-      { name: 'Has form validation', pass: componentContent.includes('message.trim()') },
-      { name: 'Has success handling', pass: componentContent.includes('data.success') }
+      { name: 'Header component exists', pass: headerContent.includes('Header') },
+      { name: 'Index component exists', pass: indexContent.includes('Index') },
+      { name: 'Auth context used', pass: headerContent.includes('useAuth') },
+      { name: 'Navigation present', pass: headerContent.includes('NavLink') },
     ];
     
     let allPassed = true;
@@ -151,7 +144,7 @@ async function runTests() {
     console.log('\n📋 Manual Testing Steps:');
     console.log('1. Open http://localhost:8080 in your browser');
     console.log('2. Login with: username="pygram2k25", password="pygram2k25"');
-    console.log('3. Look for blue "Principle Ask" button in header');
+    console.log('3. Check navigation and header functionality');
     console.log('4. Click the button to open the modal');
     console.log('5. Fill out the form and send a test message');
     console.log('6. Check Mayur\'s Telegram (@Principle_Pygram_bot) for the message');
