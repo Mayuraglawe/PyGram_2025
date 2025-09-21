@@ -17,7 +17,7 @@ const departments: Department[] = [
     id: 'dept-1', 
     name: 'Computer Science & Engineering', 
     code: 'CSE',
-    description: 'Advanced computing, software development, and emerging technologies',
+    // description: 'Advanced computing, software development, and emerging technologies',
     colorTheme: '#3B82F6',
     isActive: true,
     maxStudents: 60,
@@ -32,7 +32,7 @@ const departments: Department[] = [
     id: 'dept-2', 
     name: 'Mechanical Engineering', 
     code: 'MECH',
-    description: 'Mechanical systems, manufacturing, and automation',
+    // description: 'Mechanical systems, manufacturing, and automation',
     colorTheme: '#10B981',
     isActive: true,
     maxStudents: 60,
@@ -47,7 +47,7 @@ const departments: Department[] = [
     id: 'dept-3', 
     name: 'Civil Engineering', 
     code: 'CIVIL',
-    description: 'Infrastructure, construction, and environmental engineering',
+    // description: 'Infrastructure, construction, and environmental engineering',
     colorTheme: '#F59E0B',
     isActive: true,
     maxStudents: 60,
@@ -62,7 +62,7 @@ const departments: Department[] = [
     id: 'dept-4', 
     name: 'Electrical Engineering', 
     code: 'EEE',
-    description: 'Power systems, electronics, and electrical design',
+    // description: 'Power systems, electronics, and electrical design',
     colorTheme: '#EF4444',
     isActive: true,
     maxStudents: 60,
@@ -77,7 +77,7 @@ const departments: Department[] = [
     id: 'dept-5', 
     name: 'Electronics & Telecommunication', 
     code: 'EXTC',
-    description: 'Communication systems, signal processing, and networking',
+    // description: 'Communication systems, signal processing, and networking',
     colorTheme: '#8B5CF6',
     isActive: true,
     maxStudents: 60,
@@ -106,7 +106,7 @@ const roleDescriptions = {
     permissions: ['Create timetables', 'Draft schedules', 'Submit for approval', 'Manage department events']
   },
   publisher: {
-    title: 'Faculty Mentor (Publisher)',
+    title: 'Faculty Mentor (hod)',
     description: 'Review and approve timetables from creators',
     icon: Crown,
     color: 'bg-blue-100 text-blue-800',
@@ -159,13 +159,11 @@ export default function Register() {
     firstName: '',
     lastName: '',
     email: '',
-    username: '',
+    username: '', // Will be college student ID
     password: '',
     confirmPassword: '',
-    role: preSelectedRole || '',
+    role: 'student', // Default to student only
     departmentId: '',
-    studentId: '', // For students
-    employeeId: '', // For faculty
     phone: ''
   });
 
@@ -219,31 +217,33 @@ export default function Register() {
   const validateForm = () => {
     if (!formData.firstName.trim()) return 'First name is required';
     if (!formData.lastName.trim()) return 'Last name is required';
-    if (!formData.email.trim()) return 'Email is required';
-    if (!formData.username.trim()) return 'Username is required';
-    if (formData.username.length < 3) return 'Username must be at least 3 characters';
+    if (!formData.email.trim()) return 'College email is required';
+    if (!formData.username.trim()) return 'College Student ID is required';
+    if (formData.username.length < 3) return 'Student ID must be at least 3 characters';
     if (!formData.password) return 'Password is required';
     if (formData.password.length < 6) return 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
-    if (!formData.role) return 'Please select a role';
-    if (!formData.departmentId) return 'Please select a department - Department selection is mandatory for all users';
-    if (formData.role === 'student' && !formData.studentId.trim()) return 'Student ID is required';
-    if (formData.role === 'mentor' && !formData.employeeId.trim()) return 'Employee ID is required';
+    if (!formData.departmentId) return 'Please select your department';
+    if (!formData.phone.trim()) return 'Phone number is required';
     
-    // Email validation
+    // Email validation for college domain
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) return 'Please enter a valid email address';
+    if (!emailRegex.test(formData.email)) return 'Please enter a valid college email address';
+    
+    // Check if email is college domain
+    if (!formData.email.includes('@stvincentngp.edu.in')) {
+      return 'Please use your college email address (e.g., @stvincentngp.edu.in)';
+    }
     
     // Quota validation for department registration
-    if (formData.role !== 'admin' && formData.departmentId) {
-      if (!canRegisterInDepartment(formData.departmentId, formData.role as 'student' | 'mentor')) {
+    if (formData.departmentId) {
+      if (!canRegisterInDepartment(formData.departmentId, 'student')) {
         const quota = departmentQuotas[formData.departmentId];
         if (quota) {
-          const maxUsers = formData.role === 'student' ? 60 : 2;
-          const currentUsers = formData.role === 'student' ? quota.studentCount : quota.mentorCount;
-          return `Department ${formData.role} quota exceeded. Maximum ${maxUsers} ${formData.role}s allowed (currently ${currentUsers}/${maxUsers}).`;
+          const currentUsers = quota.students;
+          return `Department student quota exceeded. Maximum 60 students allowed (currently ${currentUsers}/60).`;
         }
-        return `Registration not available for ${formData.role} role in this department.`;
+        return `Registration not available for students in this department.`;
       }
     }
     
@@ -271,12 +271,11 @@ export default function Register() {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        username: formData.username,
+        username: formData.username, // College Student ID
         password: formData.password,
-        role: formData.role as 'admin' | 'mentor' | 'student',
+        role: 'student',
         departmentId: formData.departmentId,
-        studentId: formData.studentId,
-        employeeId: formData.employeeId,
+        studentId: formData.username, // Use username as student ID
         phone: formData.phone
       });
 
@@ -304,9 +303,9 @@ export default function Register() {
               <UserPlus className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Join Py-Gram 2k25</CardTitle>
+          <CardTitle className="text-2xl font-bold">Student Registration</CardTitle>
           <CardDescription>
-            Create your account to access the college event management system
+            Create your student account to access Py-Gram 2k25
           </CardDescription>
         </CardHeader>
         
@@ -315,16 +314,6 @@ export default function Register() {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {needsDepartment && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  <strong>Department Selection Required:</strong> You need to select a department to continue. 
-                  Department selection is mandatory for all users to ensure proper workspace isolation.
-                </AlertDescription>
               </Alert>
             )}
 
@@ -337,7 +326,7 @@ export default function Register() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">First Name *</Label>
                   <Input
                     id="firstName"
                     value={formData.firstName}
@@ -347,7 +336,7 @@ export default function Register() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">Last Name *</Label>
                   <Input
                     id="lastName"
                     value={formData.lastName}
@@ -359,7 +348,7 @@ export default function Register() {
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">College Email Address *</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -367,20 +356,22 @@ export default function Register() {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="john.doe@college.edu"
+                    placeholder="john.doe@stvincentngp.edu.in"
                     className="pl-10"
                     required
                   />
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">Use your official St. Vincent college email address</p>
               </div>
 
               <div>
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
+                <Label htmlFor="phone">Phone Number *</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  placeholder="+1-234-567-8900"
+                  placeholder="+91-9876543210"
+                  required
                 />
               </div>
             </div>
@@ -390,19 +381,20 @@ export default function Register() {
               <h3 className="text-lg font-semibold">Account Information</h3>
               
               <div>
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">College Student ID (Username) *</Label>
                 <Input
                   id="username"
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
-                  placeholder="johndoe"
+                  placeholder="e.g., CSE2021001"
                   required
                 />
+                <p className="text-xs text-muted-foreground mt-1">This will be your username for login</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -420,9 +412,10 @@ export default function Register() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">Minimum 6 characters</p>
                 </div>
                 <div>
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
@@ -444,242 +437,66 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Department Selection with Enhanced Information */}
+            {/* Department Selection */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Building className="h-5 w-5" />
                 Department Selection
               </h3>
               
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium text-blue-900">Department Isolation Notice</p>
-                    <p className="text-blue-700 mt-1">
-                      Each department operates as an independent workspace. You will only see content, 
-                      users, and activities from your selected department. This ensures privacy and 
-                      organization tailored to your specific field of study.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <div>
-                <Label htmlFor="role">Select Your Role</Label>
-                <Select value={formData.role} onValueChange={(value) => handleInputChange('role', value)}>
+                <Label htmlFor="department" className="flex items-center gap-2">
+                  <Building className="h-4 w-4" />
+                  Choose Your Department *
+                </Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Select the department you belong to
+                </p>
+                <Select value={formData.departmentId} onValueChange={(value) => handleInputChange('departmentId', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose your role in the system" />
+                    <SelectValue placeholder="Select your department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(roleDescriptions).map(([role, info]) => {
-                      const Icon = info.icon;
+                    {departments.map((dept) => {
+                      const quota = departmentQuotas[dept.id];
+                      const canRegister = canRegisterInDepartment(dept.id, 'student');
+                      const currentCount = quota ? quota.students : 0;
+                      const maxCount = dept.maxStudents;
+                      
                       return (
-                        <SelectItem key={role} value={role}>
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4" />
-                            <span>{info.title}</span>
+                        <SelectItem key={dept.id} value={dept.id} disabled={!canRegister}>
+                          <div className="flex flex-col w-full">
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: dept.colorTheme }}
+                                />
+                                <span className="font-medium">{dept.name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {dept.code}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 ml-4">
+                                <span className={`text-xs ${canRegister ? 'text-green-600' : 'text-red-600'}`}>
+                                  {currentCount}/{maxCount} students
+                                </span>
+                                {canRegister && (
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {dept.description}
+                            </p>
                           </div>
                         </SelectItem>
                       );
                     })}
                   </SelectContent>
-                </Select>
-              </div>
-
-              {/* Enhanced Role Description */}
-              {selectedRole && (
-                <Card className="border-l-4 border-l-primary">
-                  <CardContent className="pt-4">
-                    <div className="flex items-start gap-3">
-                      <Badge className={selectedRole.color}>
-                        <selectedRole.icon className="h-3 w-3 mr-1" />
-                        {selectedRole.title}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">{selectedRole.description}</p>
-                    <div className="mt-3">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">
-                        Within your department workspace, you can:
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedRole.permissions.map((permission, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {permission}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Enhanced Department Selection */}
-              {formData.role && formData.role !== 'admin' && (
-                <div>
-                  <Label htmlFor="department" className="flex items-center gap-2">
-                    <Building className="h-4 w-4" />
-                    Choose Your Department Workspace
-                  </Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    This will be your primary workspace. You'll only see content from this department.
-                  </p>
-                  <Select value={formData.departmentId} onValueChange={(value) => handleInputChange('departmentId', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your department workspace" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {departments.map((dept) => {
-                        const quota = departmentQuotas[dept.id];
-                        const canRegister = canRegisterInDepartment(dept.id, formData.role as 'student' | 'mentor');
-                        const isStudent = formData.role === 'student';
-                        const currentCount = quota ? (isStudent ? quota.students : quota.mentors) : 0;
-                        const maxCount = isStudent ? dept.maxStudents : dept.maxMentors;
-                        
-                        return (
-                          <SelectItem key={dept.id} value={dept.id} disabled={!canRegister}>
-                            <div className="flex flex-col w-full">
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                  <div 
-                                    className="w-3 h-3 rounded-full" 
-                                    data-color={dept.colorTheme}
-                                  />
-                                  <span className="font-medium">{dept.name}</span>
-                                  <Badge variant="outline" className="text-xs">
-                                    {dept.code}
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center gap-2 ml-4">
-                                  <span className={`text-xs ${canRegister ? 'text-green-600' : 'text-red-600'}`}>
-                                    {currentCount}/{maxCount} {formData.role}s
-                                  </span>
-                                  {canRegister && (
-                                    <CheckCircle className="h-3 w-3 text-green-600" />
-                                  )}
-                                </div>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {dept.description}
-                              </p>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
                   </Select>
-                  
-                  {/* Enhanced quota info for selected department */}
-                  {formData.departmentId && (
-                    <div className="mt-2">
-                      {(() => {
-                        const selectedDept = departments.find(d => d.id === formData.departmentId);
-                        const quota = departmentQuotas[formData.departmentId];
-                        
-                        if (!selectedDept || !quota) return null;
-                        
-                        return (
-                          <Card 
-                            className="border-l-4 dept-themed-card"
-                            data-dept-color={selectedDept.colorTheme}
-                          >
-                            <CardContent className="pt-4">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <div 
-                                      className="w-4 h-4 rounded-full dept-color-indicator" 
-                                      data-color={selectedDept.colorTheme}
-                                    />
-                                    <span className="font-medium">{selectedDept.name}</span>
-                                  </div>
-                                  <Badge variant="outline">{selectedDept.code}</Badge>
-                                </div>
-                                
-                                <p className="text-sm text-muted-foreground">
-                                  {selectedDept.description}
-                                </p>
-                                
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div className="space-y-1">
-                                    <div className="font-medium">Head of Department</div>
-                                    <div className="text-muted-foreground">{selectedDept.headOfDepartment}</div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <div className="font-medium">Contact</div>
-                                    <div className="text-muted-foreground">{selectedDept.contactEmail}</div>
-                                  </div>
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  <div className="font-medium text-sm">Department Capacity Status:</div>
-                                  <div className="grid grid-cols-2 gap-4 text-xs">
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">Students:</span>
-                                      <span className="font-medium">
-                                        {quota.students}/{selectedDept.maxStudents}
-                                        <span className="text-green-600 ml-1">
-                                          ({selectedDept.maxStudents - quota.students} available)
-                                        </span>
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">Mentors:</span>
-                                      <span className="font-medium">
-                                        {quota.mentors}/{selectedDept.maxMentors}
-                                        <span className="text-green-600 ml-1">
-                                          ({selectedDept.maxMentors - quota.mentors} available)
-                                        </span>
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="text-xs text-muted-foreground flex items-center justify-between">
-                                  <span>Last updated: {lastQuotaUpdate.toLocaleTimeString()}</span>
-                                  <Badge variant="outline" className="text-xs">
-                                    Isolated Workspace
-                                  </Badge>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })()}
-                    </div>
-                  )}
                 </div>
-              )}
-
-              {/* Role-specific ID fields */}
-              {formData.role === 'student' && (
-                <div>
-                  <Label htmlFor="studentId">Student ID</Label>
-                  <Input
-                    id="studentId"
-                    value={formData.studentId}
-                    onChange={(e) => handleInputChange('studentId', e.target.value)}
-                    placeholder="e.g., CSE2021001"
-                    required
-                  />
-                </div>
-              )}
-
-              {formData.role === 'mentor' && (
-                <div>
-                  <Label htmlFor="employeeId">Employee ID</Label>
-                  <Input
-                    id="employeeId"
-                    value={formData.employeeId}
-                    onChange={(e) => handleInputChange('employeeId', e.target.value)}
-                    placeholder="e.g., FAC001"
-                    required
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Submit Button */}
+              </div>            {/* Submit Button */}
             <div className="space-y-4">
               <Button 
                 type="submit" 
@@ -695,7 +512,7 @@ export default function Register() {
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Create Account
+                    Create Student Account
                   </>
                 )}
               </Button>
@@ -705,11 +522,6 @@ export default function Register() {
                   Already have an account?{' '}
                   <Link to="/signin" className="text-primary hover:underline font-medium">
                     Sign in here
-                  </Link>
-                </div>
-                <div>
-                  <Link to="/role-selection" className="text-xs text-primary hover:underline">
-                    ← Back to Role Selection
                   </Link>
                 </div>
               </div>

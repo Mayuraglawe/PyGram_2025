@@ -148,8 +148,9 @@ export default function SignInPage() {
     e.preventDefault();
     setError('');
 
-    // Validate department selection (skip for admin)
-    if (preSelectedRole !== 'admin' && !selectedDepartment) {
+    // Skip department validation for students since they no longer select it
+    // Validate department selection (skip for admin users and students)
+    if (preSelectedRole !== 'admin' && preSelectedRole !== 'student' && !selectedDepartment) {
       setError('Please select your department to continue.');
       return;
     }
@@ -226,13 +227,15 @@ export default function SignInPage() {
               )}
               
               <div>
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">
+                  {preSelectedRole === 'student' ? 'Student ID' : 'Username'}
+                </Label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder={preSelectedRole === 'student' ? 'Enter your student ID' : 'Enter your username'}
                   required
                 />
               </div>
@@ -264,8 +267,8 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              {/* Department Selection - Only show for non-admin roles */}
-              {preSelectedRole !== 'admin' && (
+              {/* Department Selection - Hide for admin users and students */}
+              {preSelectedRole !== 'admin' && preSelectedRole !== 'student' && (
                 <div>
                   <Label htmlFor="department">Department</Label>
                   <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
@@ -301,8 +304,22 @@ export default function SignInPage() {
                   )}
                 </div>
               )}
-              
-              {/* Admin notice */}
+
+              {/* Show student access notice */}
+              {preSelectedRole === 'student' && (
+                <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-md">
+                  <div className="flex items-center space-x-2 text-sm text-orange-800">
+                    <GraduationCap className="h-4 w-4" />
+                    <span className="font-medium">Student Access:</span>
+                    <span>Department assigned based on student ID</span>
+                  </div>
+                  <p className="text-xs text-orange-600 mt-1">
+                    Your department will be automatically detected from your student ID.
+                  </p>
+                </div>
+              )}
+
+              {/* Show admin access notice */}
               {preSelectedRole === 'admin' && (
                 <div className="p-3 bg-purple-50 border border-purple-200 rounded-md">
                   <div className="flex items-center space-x-2 text-sm text-purple-800">
