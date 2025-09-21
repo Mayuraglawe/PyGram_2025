@@ -1,33 +1,26 @@
 import { createApi, type BaseQueryFn } from "@reduxjs/toolkit/query/react";
+import { 
+  Faculty, 
+  Subject, 
+  Classroom, 
+  StudentBatch, 
+  Timetable, 
+  ScheduledClass,
+  CreateFacultyRequest,
+  CreateSubjectRequest,
+  CreateClassroomRequest,
+  CreateStudentBatchRequest,
+  CreateTimetableRequest,
+  UpdateFacultyRequest,
+  UpdateSubjectRequest,
+  UpdateClassroomRequest,
+  UpdateStudentBatchRequest,
+  UpdateTimetableRequest,
+  ApiResponse
+} from "@shared/api.js";
 
 export interface LoginRequest { username: string; password: string }
 export interface LoginResponse { access: string; refresh: string }
-
-// Entities
-export interface Faculty { id: number; name: string; employee_id: string; department: string; user?: number | null }
-export interface Subject { id: number; name: string; code: string; department: string; credits: number; lectures_per_week: number; labs_per_week: number; requires_lab: boolean }
-export interface Classroom { id: number; name: string; capacity: number; type: "Lecture" | "Lab"; has_projector: boolean; has_smartboard: boolean }
-export interface StudentBatch { id: number; name: string; year: number; semester: number; strength: number; department: string; subjects: number[] }
-export interface TimeSlot { id: number; day_of_week: string; start_time: string; end_time: string }
-export interface Timetable { 
-  id: number; 
-  name: string; 
-  status: "Draft" | "Pending Approval" | "Approved" | "Archived"; 
-  created_by: number; 
-  created_at: string; 
-  quality_score: number;
-  // New workflow fields
-  creator_id?: number; // Faculty Mentor 2 (Creator)
-  publisher_id?: number; // Faculty Mentor 1 (Publisher)
-  department_id?: string;
-  finalized_at?: string; // When Creator finalized the draft
-  approved_at?: string; // When Publisher approved/published
-  workflow_stage: "creation" | "finalized" | "under_review" | "published";
-  last_modified_by?: number;
-  last_modified_at?: string;
-  version: number; // For tracking versions
-}
-export interface ScheduledClass { id: number; timetable: number; subject: number; faculty: number; student_batch: number; classroom: number; timeslot: number; class_type: "Lecture" | "Lab" }
 
 export interface GenerateRequest { name: string; year: number; semester: number }
 export interface GenerateResponse { task_id: string }
@@ -50,10 +43,12 @@ export interface TimetableConstraint {
 
 export interface WorkflowNotification {
   id: string;
-  type: "draft_ready" | "published" | "updated" | "conflict_detected";
+  type: "draft_ready" | "published" | "updated" | "conflict_detected" | "exam_scheduled" | "assignment_posted";
   title: string;
   message: string;
-  timetable_id: number;
+  timetable_id?: number; // Made optional since exam/assignment notifications don't relate to timetables
+  exam_id?: string; // For exam notifications
+  assignment_id?: string; // For assignment notifications
   from_user_id: number;
   to_user_id: number;
   created_at: string;
@@ -89,85 +84,6 @@ export interface ChatGenerateRequest {
   constraints: TimetableConstraint[];
 }
 
-// Simple mock data for development
-async function handleMockRequest(urlPath: string, method: string, body?: any) {
-  function mockDelay(ms = 300) {
-    return new Promise((res) => setTimeout(res, ms));
-  }
-
-  const path = urlPath.replace(/^\/api/, "");
-  
-  if (method === "GET" && path === "/faculty/") {
-    await mockDelay(100);
-    return { data: [
-      { id: 1, name: "Dr. Alice Johnson", employee_id: "FAC001", department: "Computer Science" },
-      { id: 2, name: "Prof. Bob Smith", employee_id: "FAC002", department: "Computer Science" },
-      { id: 3, name: "Dr. Carol Brown", employee_id: "FAC003", department: "Electronics" }
-    ] };
-  }
-  
-  if (method === "GET" && path === "/subjects/") {
-    await mockDelay(100);
-    return { data: [
-      { id: 1, name: "Data Structures and Algorithms", code: "CS201", department: "Computer Science", credits: 4, lectures_per_week: 3, labs_per_week: 1, requires_lab: true },
-      { id: 2, name: "Database Management Systems", code: "CS301", department: "Computer Science", credits: 4, lectures_per_week: 3, labs_per_week: 1, requires_lab: true },
-      { id: 3, name: "Computer Networks", code: "CS302", department: "Computer Science", credits: 3, lectures_per_week: 2, labs_per_week: 1, requires_lab: true }
-    ] };
-  }
-  
-  if (method === "GET" && path === "/classrooms/") {
-    await mockDelay(80);
-    return { data: [
-      { id: 1, name: "Room 101", capacity: 60, type: "Lecture", has_projector: true, has_smartboard: false },
-      { id: 2, name: "CS Lab A", capacity: 30, type: "Lab", has_projector: true, has_smartboard: true },
-      { id: 3, name: "Room 102", capacity: 60, type: "Lecture", has_projector: true, has_smartboard: true }
-    ] };
-  }
-  
-  if (method === "GET" && path === "/batches/") {
-    await mockDelay(80);
-    return { data: [
-      { id: 1, name: "CSE 2025 Batch A", year: 2025, semester: 1, strength: 58, department: "Computer Science", subjects: [1,2] },
-      { id: 2, name: "CSE 2025 Batch B", year: 2025, semester: 1, strength: 52, department: "Computer Science", subjects: [1,3] }
-    ] };
-  }
-  
-  if (method === "GET" && path === "/timetables/") {
-    await mockDelay(120);
-    return { data: [
-      { id: 1, name: "Fall 2025 Main Schedule", status: "Approved", created_by: 1, created_at: new Date().toISOString(), quality_score: 0.92 },
-      { id: 2, name: "Spring 2025 Draft", status: "Draft", created_by: 1, created_at: new Date().toISOString(), quality_score: 0.0 }
-    ] };
-  }
-
-  if (method === "GET" && /^\/timetables\/\d+\/$/.test(path)) {
-    await mockDelay(120);
-    const match = path.match(/^\/timetables\/(\d+)\//);
-    const id = match ? Number(match[1]) : 1;
-    return { 
-      data: { 
-        timetable: { 
-          id, 
-          name: `Timetable ${id}`, 
-          status: "Approved", 
-          created_by: 1, 
-          created_at: new Date().toISOString(), 
-          quality_score: 0.9 
-        }, 
-        classes: [] 
-      } 
-    };
-  }
-
-  if (method === "POST") {
-    await mockDelay(100);
-    const id = Math.floor(Math.random() * 1000) + 10;
-    return { data: { id, ...body } };
-  }
-
-  return null;
-}
-
 // Base query configuration
 const baseUrl = "/api";
 
@@ -195,14 +111,6 @@ const customBaseQuery: BaseQueryFn<{
     headers,
     body: body ? JSON.stringify(body) : undefined,
   };
-
-  // Try mock data first for development
-  try {
-    const mockResp = await handleMockRequest(url.replace(/^https?:\/\/[\w\.-]+/, ""), method, body);
-    if (mockResp) return mockResp as any;
-  } catch (mErr) {
-    console.debug("Mock handler error", mErr);
-  }
 
   if (typeof navigator !== "undefined" && !navigator.onLine) {
     return { error: { status: "OFFLINE", error: "No network connection" } } as any;
@@ -244,6 +152,7 @@ export const api = createApi({
   reducerPath: "api",
   baseQuery: customBaseQuery,
   tagTypes: [
+    "Department",
     "Faculty",
     "Subject",
     "Classroom",
@@ -252,6 +161,7 @@ export const api = createApi({
     "ScheduledClass",
   ],
   endpoints: (builder) => ({
+    // Auth endpoints
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (body) => ({ url: "/auth/token/", method: "POST", body }),
     }),
@@ -260,46 +170,162 @@ export const api = createApi({
       query: (body) => ({ url: "/auth/register/", method: "POST", body }),
     }),
 
-    // CRUD endpoints
-    getFaculty: builder.query<Faculty[], void>({ 
+    // Department endpoints
+    getDepartments: builder.query<ApiResponse<any>, void>({
+      query: () => ({ url: "/departments", method: "GET" }),
+      providesTags: ["Department"],
+    }),
+    getDepartmentById: builder.query<ApiResponse<any>, string>({
+      query: (id) => ({ url: `/departments/${id}`, method: "GET" }),
+      providesTags: ["Department"],
+    }),
+    addDepartment: builder.mutation<ApiResponse<any>, any>({
+      query: (body) => ({ url: "/departments", method: "POST", body }),
+      invalidatesTags: ["Department"],
+    }),
+    updateDepartment: builder.mutation<ApiResponse<any>, { id: string; data: any }>({
+      query: ({ id, data }) => ({ url: `/departments/${id}`, method: "PUT", body: data }),
+      invalidatesTags: ["Department"],
+    }),
+    deleteDepartment: builder.mutation<ApiResponse<any>, string>({
+      query: (id) => ({ url: `/departments/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Department"],
+    }),
+
+    // Faculty endpoints
+    getFaculty: builder.query<ApiResponse<Faculty[]>, void>({ 
       query: () => ({ url: "/faculty/", method: "GET" }), 
       providesTags: ["Faculty"] 
     }),
-    addFaculty: builder.mutation<Faculty, Partial<Faculty>>({
+    getFacultyById: builder.query<ApiResponse<Faculty>, number>({
+      query: (id) => ({ url: `/faculty/${id}`, method: "GET" }),
+      providesTags: ["Faculty"],
+    }),
+    addFaculty: builder.mutation<ApiResponse<Faculty>, CreateFacultyRequest>({
       query: (body) => ({ url: "/faculty/", method: "POST", body }),
       invalidatesTags: ["Faculty"],
     }),
+    updateFaculty: builder.mutation<ApiResponse<Faculty>, { id: number; data: UpdateFacultyRequest }>({
+      query: ({ id, data }) => ({ url: `/faculty/${id}`, method: "PUT", body: data }),
+      invalidatesTags: ["Faculty"],
+    }),
+    deleteFaculty: builder.mutation<ApiResponse<Faculty>, number>({
+      query: (id) => ({ url: `/faculty/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Faculty"],
+    }),
 
-    getSubjects: builder.query<Subject[], void>({ 
-      query: () => ({ url: "/subjects/", method: "GET" }), 
+    // Subject endpoints
+    getSubjects: builder.query<ApiResponse<Subject[]>, { department?: string } | undefined>({ 
+      query: (params) => ({ 
+        url: `/subjects${params?.department ? `?department=${params.department}` : ""}`, 
+        method: "GET" 
+      }), 
       providesTags: ["Subject"] 
     }),
+    getSubjectById: builder.query<ApiResponse<Subject>, number>({
+      query: (id) => ({ url: `/subjects/${id}`, method: "GET" }),
+      providesTags: ["Subject"],
+    }),
+    addSubject: builder.mutation<ApiResponse<Subject>, CreateSubjectRequest>({
+      query: (body) => ({ url: "/subjects", method: "POST", body }),
+      invalidatesTags: ["Subject"],
+    }),
+    updateSubject: builder.mutation<ApiResponse<Subject>, { id: number; data: UpdateSubjectRequest }>({
+      query: ({ id, data }) => ({ url: `/subjects/${id}`, method: "PUT", body: data }),
+      invalidatesTags: ["Subject"],
+    }),
+    deleteSubject: builder.mutation<ApiResponse<Subject>, number>({
+      query: (id) => ({ url: `/subjects/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Subject"],
+    }),
 
-    getClassrooms: builder.query<Classroom[], void>({ 
-      query: () => ({ url: "/classrooms/", method: "GET" }), 
+    // Classroom endpoints
+    getClassrooms: builder.query<ApiResponse<Classroom[]>, { type?: string } | undefined>({ 
+      query: (params) => ({ 
+        url: `/classrooms${params?.type ? `?type=${params.type}` : ""}`, 
+        method: "GET" 
+      }), 
       providesTags: ["Classroom"] 
     }),
+    getClassroomById: builder.query<ApiResponse<Classroom>, number>({
+      query: (id) => ({ url: `/classrooms/${id}`, method: "GET" }),
+      providesTags: ["Classroom"],
+    }),
+    addClassroom: builder.mutation<ApiResponse<Classroom>, CreateClassroomRequest>({
+      query: (body) => ({ url: "/classrooms", method: "POST", body }),
+      invalidatesTags: ["Classroom"],
+    }),
+    updateClassroom: builder.mutation<ApiResponse<Classroom>, { id: number; data: UpdateClassroomRequest }>({
+      query: ({ id, data }) => ({ url: `/classrooms/${id}`, method: "PUT", body: data }),
+      invalidatesTags: ["Classroom"],
+    }),
+    deleteClassroom: builder.mutation<ApiResponse<Classroom>, number>({
+      query: (id) => ({ url: `/classrooms/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Classroom"],
+    }),
 
-    getBatches: builder.query<StudentBatch[], void>({ 
-      query: () => ({ url: "/batches/", method: "GET" }), 
+    // Student Batch endpoints
+    getBatches: builder.query<ApiResponse<StudentBatch[]>, { department?: string; year?: number; semester?: number } | undefined>({ 
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.department) searchParams.append('department', params.department);
+        if (params?.year) searchParams.append('year', params.year.toString());
+        if (params?.semester) searchParams.append('semester', params.semester.toString());
+        return { url: `/batches${searchParams.toString() ? `?${searchParams.toString()}` : ""}`, method: "GET" };
+      }, 
       providesTags: ["StudentBatch"] 
     }),
+    getBatchById: builder.query<ApiResponse<StudentBatch>, number>({
+      query: (id) => ({ url: `/batches/${id}`, method: "GET" }),
+      providesTags: ["StudentBatch"],
+    }),
+    addBatch: builder.mutation<ApiResponse<StudentBatch>, CreateStudentBatchRequest>({
+      query: (body) => ({ url: "/batches", method: "POST", body }),
+      invalidatesTags: ["StudentBatch"],
+    }),
+    updateBatch: builder.mutation<ApiResponse<StudentBatch>, { id: number; data: UpdateStudentBatchRequest }>({
+      query: ({ id, data }) => ({ url: `/batches/${id}`, method: "PUT", body: data }),
+      invalidatesTags: ["StudentBatch"],
+    }),
+    deleteBatch: builder.mutation<ApiResponse<StudentBatch>, number>({
+      query: (id) => ({ url: `/batches/${id}`, method: "DELETE" }),
+      invalidatesTags: ["StudentBatch"],
+    }),
 
-    // Timetables
-    listTimetables: builder.query<Timetable[], void>({ 
-      query: () => ({ url: "/timetables/", method: "GET" }), 
+    // Timetable endpoints
+    listTimetables: builder.query<ApiResponse<Timetable[]>, { status?: string } | undefined>({ 
+      query: (params) => ({ 
+        url: `/timetables${params?.status ? `?status=${params.status}` : ""}`, 
+        method: "GET" 
+      }), 
       providesTags: ["Timetable"] 
     }),
-    getTimetableById: builder.query<{ timetable: Timetable; classes: ScheduledClass[] }, number>({
-      query: (id) => ({ url: `/timetables/${id}/`, method: "GET" }),
-      providesTags: ["Timetable", "ScheduledClass"],
+    getTimetableById: builder.query<ApiResponse<Timetable>, number>({
+      query: (id) => ({ url: `/timetables/${id}`, method: "GET" }),
+      providesTags: ["Timetable"],
+    }),
+    getTimetableClasses: builder.query<ApiResponse<ScheduledClass[]>, number>({
+      query: (id) => ({ url: `/timetables/${id}/classes`, method: "GET" }),
+      providesTags: ["ScheduledClass"],
+    }),
+    addTimetable: builder.mutation<ApiResponse<Timetable>, CreateTimetableRequest>({
+      query: (body) => ({ url: "/timetables", method: "POST", body }),
+      invalidatesTags: ["Timetable"],
+    }),
+    updateTimetable: builder.mutation<ApiResponse<Timetable>, { id: number; data: UpdateTimetableRequest }>({
+      query: ({ id, data }) => ({ url: `/timetables/${id}`, method: "PUT", body: data }),
+      invalidatesTags: ["Timetable"],
+    }),
+    deleteTimetable: builder.mutation<ApiResponse<Timetable>, number>({
+      query: (id) => ({ url: `/timetables/${id}`, method: "DELETE" }),
+      invalidatesTags: ["Timetable"],
     }),
     approveTimetable: builder.mutation<{ ok: boolean }, number>({
       query: (id) => ({ url: `/timetables/${id}/approve/`, method: "POST" }),
       invalidatesTags: ["Timetable"],
     }),
 
-    // Generation
+    // Generation endpoints
     generateTimetable: builder.mutation<GenerateResponse, GenerateRequest>({
       query: (body) => ({ url: "/timetables/generate/", method: "POST", body }),
     }),
@@ -310,16 +336,55 @@ export const api = createApi({
 });
 
 export const {
+  // Auth
   useLoginMutation,
   useRegisterMutation,
+  
+  // Departments
+  useGetDepartmentsQuery,
+  useGetDepartmentByIdQuery,
+  useAddDepartmentMutation,
+  useUpdateDepartmentMutation,
+  useDeleteDepartmentMutation,
+  
+  // Faculty
   useGetFacultyQuery,
+  useGetFacultyByIdQuery,
   useAddFacultyMutation,
+  useUpdateFacultyMutation,
+  useDeleteFacultyMutation,
+  
+  // Subjects
   useGetSubjectsQuery,
+  useGetSubjectByIdQuery,
+  useAddSubjectMutation,
+  useUpdateSubjectMutation,
+  useDeleteSubjectMutation,
+  
+  // Classrooms
   useGetClassroomsQuery,
+  useGetClassroomByIdQuery,
+  useAddClassroomMutation,
+  useUpdateClassroomMutation,
+  useDeleteClassroomMutation,
+  
+  // Student Batches
   useGetBatchesQuery,
+  useGetBatchByIdQuery,
+  useAddBatchMutation,
+  useUpdateBatchMutation,
+  useDeleteBatchMutation,
+  
+  // Timetables
   useListTimetablesQuery,
   useGetTimetableByIdQuery,
+  useGetTimetableClassesQuery,
+  useAddTimetableMutation,
+  useUpdateTimetableMutation,
+  useDeleteTimetableMutation,
   useApproveTimetableMutation,
+  
+  // Generation
   useGenerateTimetableMutation,
   useGetGenerationStatusQuery,
 } = api;

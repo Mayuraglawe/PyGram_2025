@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { getTelegramService, MessagePayload } from '../services/telegramService.js';
-import { getSetupInstructions, getChatIds, testPrincipalMessage } from './telegram-setup.js';
+import { getTelegramService, MessagePayload } from '../services/telegramService';
+import { getSetupInstructions, getChatIds, testPrincipalMessage } from './telegram-setup';
 
 // ============================================================================
 // TELEGRAM API ROUTES

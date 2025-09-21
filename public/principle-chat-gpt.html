@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Principal - Py-Gram 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#6366f1',
+                        accent: '#8b5cf6',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        error: '#ef4444',
+                        'chat-user': '#3b82f6',
+                        'chat-ai': '#f3f4f6',
+                        'chat-ai-dark': '#374151'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .typing-indicator {
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .message-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .priority-high {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border-color: #f87171;
+        }
+        
+        .priority-medium {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-color: #f59e0b;
+        }
+        
+        .priority-low {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #60a5fa;
+        }
+        
+        .send-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            transition: all 0.2s ease;
+        }
+        
+        .send-button:hover {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+        }
+        
+        .send-button:disabled {
+            background: #9ca3af;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .chat-container {
+            height: 500px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h8a2 2 0 002-2V8m-9 4h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-900">Chat with Principal</h1>
+                        <p class="text-sm text-gray-500" id="status-text">Connecting...</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div id="connection-status" class="w-3 h-3 bg-gray-400 rounded-full"></div>
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Toggle dark mode">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                    </button>
+                    <button onclick="window.close()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Close chat window">
+                        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6">
+        <!-- User Info Card -->
+        <div id="user-info" class="bg-white rounded-xl shadow-sm border p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span class="font-medium">Name:</span>
+                    <span id="user-name">Loading...</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-2m-14 0h2m-2 0h-2m16 0v-2a2 2 0 00-2-2H7a2 2 0 00-2 2v2"></path>
+                    </svg>
+                    <span class="font-medium">Department:</span>
+                    <span id="user-department">Loading...</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium" id="user-role">
+                        Publisher
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div class="bg-white rounded-xl shadow-sm border mb-6 chat-container">
+            <!-- Messages Area -->
+            <div id="messages-container" class="h-full overflow-y-auto p-6 space-y-4">
+                <!-- Welcome Message -->
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h8a2 2 0 002-2V8m-9 4h4"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1 bg-gray-100 rounded-2xl rounded-tl-sm p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="font-medium text-gray-900">System</span>
+                            <span class="text-xs text-gray-500">Just now</span>
+                        </div>
+                        <p class="text-gray-800">
+                            Welcome to the Principal Chat! You can send messages directly to the principal via Telegram. 
+                            Please select the priority level and type your message below.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Input Area -->
+        <div class="bg-white rounded-xl shadow-sm border p-6">
+            <!-- Priority Selection -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Message Priority</label>
+                <div class="flex space-x-2">
+                    <button onclick="setPriority('low')" id="priority-low" class="flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all priority-low">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Low</span>
+                    </button>
+                    <button onclick="setPriority('medium')" id="priority-medium" class="flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all priority-medium">
+                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Medium</span>
+                    </button>
+                    <button onclick="setPriority('high')" id="priority-high" class="flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all priority-high">
+                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.348 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <span class="text-sm font-medium">High</span>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">High priority messages will send urgent notifications to the principal</p>
+            </div>
+
+            <!-- Message Input -->
+            <div class="flex space-x-4">
+                <div class="flex-1">
+                    <textarea 
+                        id="message-input" 
+                        placeholder="Type your message to the principal..."
+                        class="w-full p-4 border border-gray-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        rows="3"
+                        maxlength="4000"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-xs text-gray-500">Press Ctrl+Enter to send</span>
+                        <span class="text-xs text-gray-500">
+                            <span id="char-count">0</span>/4000
+                        </span>
+                    </div>
+                </div>
+                <button 
+                    id="send-button"
+                    onclick="sendMessage()" 
+                    class="send-button text-white px-6 py-4 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled
+                    title="Send message to principal"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Alert -->
+        <div id="status-alert" class="mt-4 hidden">
+            <!-- Alert content will be inserted here -->
+        </div>
+    </main>
+
+    <script>
+        // Global state
+        let currentPriority = 'medium';
+        let isConnected = false;
+        let userInfo = null;
+        let messageHistory = [];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadUserInfo();
+            checkTelegramStatus();
+            setupEventListeners();
+        });
+
+        function initializeApp() {
+            console.log('🚀 Principal Chat initialized');
+            updateConnectionStatus(false, 'Connecting...');
+            
+            // Set default priority
+            setPriority('medium');
+            
+            // Update character count
+            updateCharacterCount();
+        }
+
+        function setupEventListeners() {
+            const messageInput = document.getElementById('message-input');
+            
+            messageInput.addEventListener('input', function() {
+                updateCharacterCount();
+                toggleSendButton();
+            });
+            
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+
+        function loadUserInfo() {
+            // Try to get user info from localStorage or sessionStorage
+            // In a real app, this would come from authentication
+            const mockUserInfo = {
+                name: 'Dr. John Smith',
+                department: 'Computer Science',
+                role: 'Publisher',
+                email: 'john.smith@university.edu'
+            };
+            
+            userInfo = mockUserInfo;
+            updateUserInfoDisplay();
+        }
+
+        function updateUserInfoDisplay() {
+            if (userInfo) {
+                document.getElementById('user-name').textContent = userInfo.name;
+                document.getElementById('user-department').textContent = userInfo.department;
+                document.getElementById('user-role').textContent = userInfo.role;
+            }
+        }
+
+        async function checkTelegramStatus() {
+            try {
+                const response = await fetch('/api/telegram/status');
+                const data = await response.json();
+                
+                if (data.success && data.status.isReady) {
+                    updateConnectionStatus(true, 'Connected to Telegram');
+                    isConnected = true;
+                } else {
+                    updateConnectionStatus(false, 'Telegram service unavailable');
+                    isConnected = false;
+                }
+            } catch (error) {
+                console.error('Failed to check Telegram status:', error);
+                updateConnectionStatus(false, 'Connection failed');
+                isConnected = false;
+            }
+        }
+
+        function updateConnectionStatus(connected, message) {
+            const statusIndicator = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            
+            if (connected) {
+                statusIndicator.className = 'w-3 h-3 bg-green-500 rounded-full';
+                statusText.textContent = message;
+            } else {
+                statusIndicator.className = 'w-3 h-3 bg-red-500 rounded-full';
+                statusText.textContent = message;
+            }
+        }
+
+        function setPriority(priority) {
+            currentPriority = priority;
+            
+            // Reset all buttons
+            ['low', 'medium', 'high'].forEach(p => {
+                const btn = document.getElementById(`priority-${p}`);
+                btn.classList.remove('ring-2', 'ring-blue-500');
+            });
+            
+            // Highlight selected button
+            const selectedBtn = document.getElementById(`priority-${priority}`);
+            selectedBtn.classList.add('ring-2', 'ring-blue-500');
+        }
+
+        function updateCharacterCount() {
+            const input = document.getElementById('message-input');
+            const charCount = document.getElementById('char-count');
+            const count = input.value.length;
+            
+            charCount.textContent = count;
+            
+            if (count > 3600) {
+                charCount.classList.add('text-red-500');
+            } else if (count > 3000) {
+                charCount.classList.add('text-yellow-500');
+                charCount.classList.remove('text-red-500');
+            } else {
+                charCount.classList.remove('text-red-500', 'text-yellow-500');
+            }
+        }
+
+        function toggleSendButton() {
+            const input = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            const message = input.value.trim();
+            
+            if (message.length > 0 && message.length <= 4000 && isConnected) {
+                sendButton.disabled = false;
+            } else {
+                sendButton.disabled = true;
+            }
+        }
+
+        function handleKeyDown(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message || !isConnected || !userInfo) return;
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Add user message to chat
+            addMessage('user', message, currentPriority);
+            
+            // Clear input
+            input.value = '';
+            updateCharacterCount();
+            toggleSendButton();
+            
+            try {
+                const response = await fetch('/api/telegram/send-to-principal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        senderName: userInfo.name,
+                        senderRole: userInfo.role,
+                        senderDepartment: userInfo.department,
+                        message: message,
+                        priority: currentPriority
+                    }),
+                });
+                
+                const result = await response.json();
+                hideTypingIndicator();
+                
+                if (result.success) {
+                    addMessage('system', `✅ Message sent successfully to principal via Telegram!`, 'low');
+                    showAlert('success', 'Message sent successfully!');
+                } else {
+                    addMessage('system', `❌ Failed to send message: ${result.error}`, 'high');
+                    showAlert('error', result.error || 'Failed to send message');
+                }
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                hideTypingIndicator();
+                addMessage('system', '❌ Network error. Please try again.', 'high');
+                showAlert('error', 'Network error. Please try again.');
+            }
+        }
+
+        function addMessage(sender, text, priority = 'medium') {
+            const container = document.getElementById('messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-slide-in';
+            
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="flex items-end justify-end space-x-3">
+                        <div class="flex-1 max-w-md">
+                            <div class="bg-blue-500 text-white rounded-2xl rounded-br-sm p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs opacity-75 capitalize">${priority} Priority</span>
+                                    <span class="text-xs opacity-75">${timestamp}</span>
+                                </div>
+                                <p>${text}</p>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const bgColor = sender === 'system' ? 'bg-green-100' : 'bg-gray-100';
+                const iconColor = sender === 'system' ? 'from-green-500 to-emerald-500' : 'from-purple-500 to-pink-500';
+                
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-r ${iconColor} rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h8a2 2 0 002-2V8m-9 4h4"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1 ${bgColor} rounded-2xl rounded-tl-sm p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="font-medium text-gray-900">${sender === 'system' ? 'System' : 'Principal'}</span>
+                                <span class="text-xs text-gray-500">${timestamp}</span>
+                            </div>
+                            <p class="text-gray-800">${text}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const container = document.getElementById('messages-container');
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typing-indicator';
+            typingDiv.className = 'flex items-start space-x-3';
+            
+            typingDiv.innerHTML = `
+                <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h8a2 2 0 002-2V8m-9 4h4"></path>
+                    </svg>
+                </div>
+                <div class="bg-gray-100 rounded-2xl rounded-tl-sm p-4">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full typing-indicator"></div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(typingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function showAlert(type, message) {
+            const alertContainer = document.getElementById('status-alert');
+            alertContainer.className = 'mt-4';
+            
+            const bgColor = type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200';
+            const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
+            const iconColor = type === 'success' ? 'text-green-600' : 'text-red-600';
+            
+            const icon = type === 'success' 
+                ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>`
+                : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.348 16.5c-.77.833.192 2.5 1.732 2.5z"></path>`;
+            
+            alertContainer.innerHTML = `
+                <div class="rounded-lg border p-4 ${bgColor}">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            ${icon}
+                        </svg>
+                        <p class="ml-3 text-sm ${textColor}">${message}</p>
+                    </div>
+                </div>
+            `;
+            
+            // Hide alert after 5 seconds
+            setTimeout(() => {
+                alertContainer.className = 'mt-4 hidden';
+            }, 5000);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        // Check connection status periodically
+        setInterval(checkTelegramStatus, 30000); // Check every 30 seconds
+    </script>
+</body>
+</html>

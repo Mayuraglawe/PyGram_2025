@@ -36,6 +36,10 @@ function getNotificationIcon(type: WorkflowNotification['type']) {
       return <Clock className="h-4 w-4 text-yellow-500" />;
     case 'conflict_detected':
       return <AlertTriangle className="h-4 w-4 text-red-500" />;
+    case 'exam_scheduled':
+      return <Calendar className="h-4 w-4 text-purple-500" />;
+    case 'assignment_posted':
+      return <Bell className="h-4 w-4 text-indigo-500" />;
     default:
       return <Bell className="h-4 w-4 text-gray-500" />;
   }
@@ -51,6 +55,10 @@ function getNotificationColor(type: WorkflowNotification['type']) {
       return 'border-l-yellow-500 bg-yellow-50';
     case 'conflict_detected':
       return 'border-l-red-500 bg-red-50';
+    case 'exam_scheduled':
+      return 'border-l-purple-500 bg-purple-50';
+    case 'assignment_posted':
+      return 'border-l-indigo-500 bg-indigo-50';
     default:
       return 'border-l-gray-500 bg-gray-50';
   }
@@ -227,6 +235,8 @@ export function NotificationList() {
   const publishedNotifications = getNotificationsByType('published');
   const updatedNotifications = getNotificationsByType('updated');
   const conflictNotifications = getNotificationsByType('conflict_detected');
+  const examNotifications = getNotificationsByType('exam_scheduled');
+  const assignmentNotifications = getNotificationsByType('assignment_posted');
 
   const handleTimetableClick = (timetableId: number) => {
     window.location.href = `/timetables/${timetableId}/edit`;
@@ -264,6 +274,54 @@ export function NotificationList() {
               <CardContent className="p-0">
                 <div className="divide-y">
                   {conflictNotifications.map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onMarkAsRead={markAsRead}
+                      onRemove={removeNotification}
+                      onTimetableClick={handleTimetableClick}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {examNotifications.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-600">
+                  <Calendar className="h-5 w-5" />
+                  Exam Schedules ({examNotifications.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                  {examNotifications.map((notification) => (
+                    <NotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onMarkAsRead={markAsRead}
+                      onRemove={removeNotification}
+                      onTimetableClick={handleTimetableClick}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {assignmentNotifications.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-indigo-600">
+                  <Bell className="h-5 w-5" />
+                  Assignments ({assignmentNotifications.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                  {assignmentNotifications.map((notification) => (
                     <NotificationItem
                       key={notification.id}
                       notification={notification}

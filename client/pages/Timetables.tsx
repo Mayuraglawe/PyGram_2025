@@ -5,9 +5,10 @@ import { useGetTimetableByIdQuery, useListTimetablesQuery } from "@/store/api";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Bot, Plus } from "lucide-react";
+import { NewGenerationButton } from "@/components/creator/NewGenerationButton";
 
 export default function TimetablesPage() {
-  const { data: timetablesRaw, isLoading } = useListTimetablesQuery();
+  const { data: timetablesRaw, isLoading } = useListTimetablesQuery({});
   const timetables = Array.isArray(timetablesRaw) ? timetablesRaw : (timetablesRaw && typeof timetablesRaw === 'object' && 'results' in timetablesRaw ? (timetablesRaw as any).results : timetablesRaw && typeof timetablesRaw === 'object' && 'data' in timetablesRaw ? (timetablesRaw as any).data : []);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { data: detailRaw } = useGetTimetableByIdQuery(selectedId!, { skip: !selectedId });
@@ -25,12 +26,7 @@ export default function TimetablesPage() {
               Create New Timetable
             </Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link to="/generate">
-              <Plus className="h-4 w-4 mr-2" />
-              New Generation
-            </Link>
-          </Button>
+          <NewGenerationButton />
         </div>
       </div>
 

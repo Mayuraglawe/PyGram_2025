@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bot, Calendar, Users, ArrowRight } from "lucide-react";
 import { useAuth, useDepartmentAccess } from "@/contexts/AuthContext";
 import TimetableChatbot from "@/components/timetable/TimetableChatbot";
+import { NewGenerationButton } from "@/components/creator/NewGenerationButton";
 import { useNavigate } from "react-router-dom";
 
 export default function CreateTimetablePage() {
@@ -43,16 +44,19 @@ export default function CreateTimetablePage() {
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Create New Timetable</h1>
-          <p className="text-muted-foreground mt-1">
-            Use our AI assistant to generate optimized timetables through conversation
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">Create New Timetable</h1>
+            <p className="text-muted-foreground mt-1">
+              Use our AI assistant to generate optimized timetables through conversation
+            </p>
+          </div>
+          <Badge variant="secondary" className="flex items-center gap-2">
+            <Bot className="h-4 w-4" />
+            Creator Mode
+          </Badge>
         </div>
-        <Badge variant="secondary" className="flex items-center gap-2">
-          <Bot className="h-4 w-4" />
-          Creator Mode
-        </Badge>
+        <NewGenerationButton />
       </div>
 
       {/* Department Selection */}

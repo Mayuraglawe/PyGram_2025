@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import TimetableChatbot from '@/components/timetable/TimetableChatbot';
 import AITimetableGrid from '../components/timetable/AITimetableGrid';
+import { NewGenerationButton } from '@/components/creator/NewGenerationButton';
 import useTheme from '@/hooks/use-theme';
 
 interface Faculty {
@@ -263,6 +264,11 @@ const AITimetableCreator: React.FC = () => {
             Create your perfect timetable with AI guidance. Drag and drop faculties and subjects, 
             or let the AI assistant help you build an optimized schedule.
           </p>
+          
+          {/* New Generation Button */}
+          <div className="flex justify-center pt-4">
+            <NewGenerationButton />
+          </div>
         </div>
 
         {/* AI Mode Toggle */}

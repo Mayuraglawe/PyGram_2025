@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useAddFacultyMutation, useGetFacultyQuery } from "@/store/api";
 import { useForm } from "react-hook-form";
 
-interface FormValues { name: string; employee_id: string; department: string }
+interface FormValues { name: string; employee_id: string; department_id: number; }
 
 export default function FacultyPage() {
   const { data: raw, isLoading } = useGetFacultyQuery();
@@ -22,7 +22,7 @@ export default function FacultyPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 grid gap-3 rounded-xl border p-4 md:grid-cols-4">
         <input className="rounded-md border p-2" placeholder="Name" {...register("name", { required: true })} />
         <input className="rounded-md border p-2" placeholder="Employee ID" {...register("employee_id", { required: true })} />
-        <input className="rounded-md border p-2" placeholder="Department" {...register("department", { required: true })} />
+        <input className="rounded-md border p-2" placeholder="Department ID" type="number" {...register("department_id", { required: true, valueAsNumber: true })} />
         <Button type="submit" disabled={isSaving}>Add Faculty</Button>
       </form>
 
@@ -32,7 +32,7 @@ export default function FacultyPage() {
             <tr className="bg-muted text-left">
               <th className="p-3">Name</th>
               <th className="p-3">Employee ID</th>
-              <th className="p-3">Department</th>
+              <th className="p-3">Department ID</th>
             </tr>
           </thead>
           <tbody>
@@ -45,7 +45,7 @@ export default function FacultyPage() {
                 <tr key={f.id} className="border-t">
                   <td className="p-3">{f.name}</td>
                   <td className="p-3">{f.employee_id}</td>
-                  <td className="p-3">{f.department}</td>
+                  <td className="p-3">{f.department_id}</td>
                 </tr>
               ))
             )}

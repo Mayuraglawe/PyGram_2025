@@ -4,7 +4,7 @@ import {
   UserWithDepartments, 
   ApiResponse,
   DepartmentAccessLog 
-} from '@shared/enhanced-api';
+} from '../../shared/enhanced-api';
 
 /**
  * Enhanced API Routes with Department Isolation Middleware
