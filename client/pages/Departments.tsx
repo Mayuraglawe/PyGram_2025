@@ -9,7 +9,9 @@ import { Badge } from '../components/ui/badge';
 import { Alert, AlertDescription } from '../components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import { Switch } from '../components/ui/switch';
 import { Plus, Users, Calendar, GraduationCap, Building, Mail, Phone, MapPin, Edit, Trash2, UserPlus, Crown, BookOpen, DoorOpen, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // Mock data for demonstration
 const mockDepartments = [
@@ -525,13 +527,87 @@ export default function Departments() {
           <TabsContent value="faculty" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Faculty Members ({faculty.length})
-                </CardTitle>
-                <CardDescription>
-                  Complete list of faculty members in {department.name}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <User className="h-5 w-5 mr-2" />
+                      Faculty Members ({faculty.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Complete list of faculty members in {department.name}
+                    </CardDescription>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Faculty
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Add New Faculty Member</DialogTitle>
+                        <DialogDescription>
+                          Add a new faculty member to {department.name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input id="name" placeholder="Dr. John Smith" />
+                          </div>
+                          <div>
+                            <Label htmlFor="employeeId">Employee ID</Label>
+                            <Input id="employeeId" placeholder="FAC001" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" placeholder="john.smith@college.edu" />
+                          </div>
+                          <div>
+                            <Label htmlFor="phone">Phone</Label>
+                            <Input id="phone" placeholder="+1-234-567-8900" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="designation">Designation</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Designation" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Professor">Professor</SelectItem>
+                                <SelectItem value="Associate Professor">Associate Professor</SelectItem>
+                                <SelectItem value="Assistant Professor">Assistant Professor</SelectItem>
+                                <SelectItem value="Lecturer">Lecturer</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="experience">Experience (Years)</Label>
+                            <Input id="experience" type="number" placeholder="10" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="specialization">Specialization</Label>
+                          <Textarea
+                            id="specialization"
+                            placeholder="Data Structures, Algorithms, Software Engineering"
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline">Cancel</Button>
+                        <Button>Add Faculty</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -556,6 +632,84 @@ export default function Departments() {
                             </Badge>
                           </div>
                         </div>
+                        <div className="flex flex-col gap-2 ml-4">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>Edit Faculty Member</DialogTitle>
+                                <DialogDescription>
+                                  Update information for {member.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-name">Full Name</Label>
+                                    <Input id="edit-name" defaultValue={member.name} />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-employeeId">Employee ID</Label>
+                                    <Input id="edit-employeeId" defaultValue={member.employeeId} />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-email">Email</Label>
+                                    <Input id="edit-email" type="email" defaultValue={member.email} />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-designation">Designation</Label>
+                                    <Select defaultValue={member.designation}>
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Professor">Professor</SelectItem>
+                                        <SelectItem value="Associate Professor">Associate Professor</SelectItem>
+                                        <SelectItem value="Assistant Professor">Assistant Professor</SelectItem>
+                                        <SelectItem value="Lecturer">Lecturer</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-experience">Experience (Years)</Label>
+                                    <Input id="edit-experience" type="number" defaultValue={member.experience} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label htmlFor="edit-specialization">Specialization</Label>
+                                  <Textarea
+                                    id="edit-specialization"
+                                    defaultValue={member.specialization}
+                                    rows={2}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex justify-end space-x-2">
+                                <Button variant="outline">Cancel</Button>
+                                <Button>Update Faculty</Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to remove ${member.name} from this department?`)) {
+                                alert('Faculty member would be removed (demo)');
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </Card>
                   ))}
@@ -567,46 +721,189 @@ export default function Departments() {
           <TabsContent value="subjects" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BookOpen className="h-5 w-5 mr-2" />
-                  Subjects Offered ({subjects.length})
-                </CardTitle>
-                <CardDescription>
-                  Curriculum and subjects taught in {department.name}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <BookOpen className="h-5 w-5 mr-2" />
+                      Subjects Offered ({subjects.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Curriculum and subjects taught in {department.name}
+                    </CardDescription>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Subject
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Add New Subject</DialogTitle>
+                        <DialogDescription>
+                          Add a new subject to {department.name} curriculum
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="subject-name">Subject Name</Label>
+                            <Input id="subject-name" placeholder="Data Structures and Algorithms" />
+                          </div>
+                          <div>
+                            <Label htmlFor="subject-code">Subject Code</Label>
+                            <Input id="subject-code" placeholder="CS201" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="credits">Credits</Label>
+                            <Input id="credits" type="number" placeholder="4" />
+                          </div>
+                          <div>
+                            <Label htmlFor="semester">Semester</Label>
+                            <Input id="semester" type="number" placeholder="3" />
+                          </div>
+                          <div>
+                            <Label htmlFor="subject-type">Type</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Theory">Theory</SelectItem>
+                                <SelectItem value="Lab">Lab</SelectItem>
+                                <SelectItem value="Theory + Lab">Theory + Lab</SelectItem>
+                                <SelectItem value="Practical">Practical</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="lectures-week">Lectures per Week</Label>
+                            <Input id="lectures-week" type="number" placeholder="3" />
+                          </div>
+                          <div>
+                            <Label htmlFor="labs-week">Labs per Week</Label>
+                            <Input id="labs-week" type="number" placeholder="1" />
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Switch id="requires-lab" />
+                          <Label htmlFor="requires-lab">Requires Laboratory</Label>
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline">Cancel</Button>
+                        <Button>Add Subject</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3 font-medium">Subject Code</th>
-                        <th className="text-left p-3 font-medium">Subject Name</th>
-                        <th className="text-left p-3 font-medium">Credits</th>
-                        <th className="text-left p-3 font-medium">Semester</th>
-                        <th className="text-left p-3 font-medium">Lectures/Week</th>
-                        <th className="text-left p-3 font-medium">Labs/Week</th>
-                        <th className="text-left p-3 font-medium">Type</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {subjects.map((subject: any) => (
-                        <tr key={subject.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3 font-medium">{subject.code}</td>
-                          <td className="p-3">{subject.name}</td>
-                          <td className="p-3">{subject.credits}</td>
-                          <td className="p-3">Sem {subject.semester}</td>
-                          <td className="p-3">{subject.lecturesPerWeek}</td>
-                          <td className="p-3">{subject.labsPerWeek}</td>
-                          <td className="p-3">
+                <div className="space-y-3">
+                  {subjects.map((subject: any) => (
+                    <Card key={subject.id} className="p-4 border-l-4 border-l-blue-500">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold text-lg">{subject.name}</h4>
+                            <Badge variant="outline" className="font-mono">{subject.code}</Badge>
                             <Badge variant={subject.requiresLab ? "default" : "secondary"} className="text-xs">
                               {subject.type}
                             </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                            <div><span className="font-medium">Credits:</span> {subject.credits}</div>
+                            <div><span className="font-medium">Semester:</span> {subject.semester}</div>
+                            <div><span className="font-medium">Lectures:</span> {subject.lecturesPerWeek}/week</div>
+                            <div><span className="font-medium">Labs:</span> {subject.labsPerWeek}/week</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button size="sm" variant="outline">
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                              <DialogHeader>
+                                <DialogTitle>Edit Subject</DialogTitle>
+                                <DialogDescription>
+                                  Update information for {subject.name}
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-subject-name">Subject Name</Label>
+                                    <Input id="edit-subject-name" defaultValue={subject.name} />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-subject-code">Subject Code</Label>
+                                    <Input id="edit-subject-code" defaultValue={subject.code} />
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-credits">Credits</Label>
+                                    <Input id="edit-credits" type="number" defaultValue={subject.credits} />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-semester">Semester</Label>
+                                    <Input id="edit-semester" type="number" defaultValue={subject.semester} />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-subject-type">Type</Label>
+                                    <Select defaultValue={subject.type}>
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Theory">Theory</SelectItem>
+                                        <SelectItem value="Lab">Lab</SelectItem>
+                                        <SelectItem value="Theory + Lab">Theory + Lab</SelectItem>
+                                        <SelectItem value="Practical">Practical</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="edit-lectures-week">Lectures per Week</Label>
+                                    <Input id="edit-lectures-week" type="number" defaultValue={subject.lecturesPerWeek} />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-labs-week">Labs per Week</Label>
+                                    <Input id="edit-labs-week" type="number" defaultValue={subject.labsPerWeek} />
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex justify-end space-x-2">
+                                <Button variant="outline">Cancel</Button>
+                                <Button>Update Subject</Button>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to remove ${subject.name}?`)) {
+                                alert('Subject would be removed (demo)');
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -615,21 +912,105 @@ export default function Departments() {
           <TabsContent value="classrooms" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <DoorOpen className="h-5 w-5 mr-2" />
-                  Classrooms & Labs ({classrooms.length})
-                </CardTitle>
-                <CardDescription>
-                  Available classrooms and laboratory facilities in {department.name}
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <DoorOpen className="h-5 w-5 mr-2" />
+                      Classrooms & Labs ({classrooms.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Available classrooms and laboratory facilities in {department.name}
+                    </CardDescription>
+                  </div>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Classroom
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Add New Classroom</DialogTitle>
+                        <DialogDescription>
+                          Add a new classroom or laboratory to {department.name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="classroom-name">Classroom Name</Label>
+                            <Input id="classroom-name" placeholder="CS Lab 1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="classroom-type">Type</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select Type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Lecture">Lecture Hall</SelectItem>
+                                <SelectItem value="Lab">Laboratory</SelectItem>
+                                <SelectItem value="Tutorial">Tutorial Room</SelectItem>
+                                <SelectItem value="Seminar">Seminar Hall</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="capacity">Capacity</Label>
+                            <Input id="capacity" type="number" placeholder="30" />
+                          </div>
+                          <div>
+                            <Label htmlFor="building">Building</Label>
+                            <Input id="building" placeholder="Technology Block" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="floor">Floor</Label>
+                            <Input id="floor" type="number" placeholder="3" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="equipment">Equipment & Facilities</Label>
+                          <Textarea
+                            id="equipment"
+                            placeholder="High-end PCs, Programming Software, Projector"
+                            rows={2}
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="flex items-center space-x-2">
+                            <Switch id="has-projector" />
+                            <Label htmlFor="has-projector">Projector</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch id="has-smartboard" />
+                            <Label htmlFor="has-smartboard">Smart Board</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Switch id="has-ac" />
+                            <Label htmlFor="has-ac">Air Conditioning</Label>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline">Cancel</Button>
+                        <Button>Add Classroom</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {classrooms.map((classroom: any) => (
-                    <Card key={classroom.id} className="p-4">
+                    <Card key={classroom.id} className="p-4 border-l-4 border-l-purple-500">
                       <div className="space-y-3">
                         <div className="flex items-start justify-between">
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-semibold text-lg">{classroom.name}</h4>
                             <p className="text-sm text-gray-600">
                               {classroom.building}, Floor {classroom.floor}
@@ -642,6 +1023,78 @@ export default function Departments() {
                                 Capacity: {classroom.capacity}
                               </span>
                             </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button size="sm" variant="outline">
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Edit Classroom</DialogTitle>
+                                  <DialogDescription>
+                                    Update information for {classroom.name}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label htmlFor="edit-classroom-name">Classroom Name</Label>
+                                      <Input id="edit-classroom-name" defaultValue={classroom.name} />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="edit-classroom-type">Type</Label>
+                                      <Select defaultValue={classroom.type}>
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="Lecture">Lecture Hall</SelectItem>
+                                          <SelectItem value="Lab">Laboratory</SelectItem>
+                                          <SelectItem value="Tutorial">Tutorial Room</SelectItem>
+                                          <SelectItem value="Seminar">Seminar Hall</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                      <Label htmlFor="edit-capacity">Capacity</Label>
+                                      <Input id="edit-capacity" type="number" defaultValue={classroom.capacity} />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="edit-building">Building</Label>
+                                      <Input id="edit-building" defaultValue={classroom.building} />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="edit-equipment">Equipment & Facilities</Label>
+                                    <Textarea
+                                      id="edit-equipment"
+                                      defaultValue={classroom.equipment}
+                                      rows={2}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex justify-end space-x-2">
+                                  <Button variant="outline">Cancel</Button>
+                                  <Button>Update Classroom</Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                if (confirm(`Are you sure you want to remove ${classroom.name}?`)) {
+                                  alert('Classroom would be removed (demo)');
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
                         

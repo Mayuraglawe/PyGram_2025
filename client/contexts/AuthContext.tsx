@@ -94,7 +94,10 @@ const PERMISSIONS = {
   
   // Analytics permissions
   view_analytics: ['admin', 'mentor'],
-  export_data: ['admin']
+  export_data: ['admin'],
+  
+  // System administration permissions
+  manage_system: ['admin']
 } as const;
 
 // Mock user data for demonstration

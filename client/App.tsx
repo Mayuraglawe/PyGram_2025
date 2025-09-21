@@ -26,6 +26,7 @@ import RoleSelectionPage from "./pages/RoleSelection";
 import DepartmentsPage from "./pages/Departments";
 import AdminPage from "./pages/Admin";
 import TelegramSetup from "./pages/TelegramSetup";
+import AdminTest from "./pages/AdminTest";
 import { NotificationList } from "./components/notifications/NotificationComponents";
 
 const queryClient = new QueryClient();
@@ -143,6 +144,13 @@ const App = () => (
                 </ProtectedRoute>
               } />
               
+              {/* Admin Test page */}
+              <Route path="/admin-test" element={
+                <div className="min-h-screen bg-background">
+                  <AdminTest />
+                </div>
+              } />
+
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -51,11 +51,25 @@ const mockClassrooms = [
   { id: '4', name: 'Structures Lab', department: '3', capacity: 25, type: 'Lab', building: 'Engineering Block', floor: 4, hasProjector: true, hasSmartboard: false, hasAC: true, equipment: 'Universal Testing Machine, Strain Gauges' }
 ];
 
+// Mock data for department roles
+const mockDepartmentRoles = [
+  { departmentId: '1', creatorId: '1', publisherId: '2' }, // Computer Engineering
+  { departmentId: '2', creatorId: '3', publisherId: null }, // Mechanical Engineering
+  { departmentId: '3', creatorId: '4', publisherId: null }, // Civil Engineering
+  { departmentId: '4', creatorId: null, publisherId: null }, // Electrical Engineering
+  { departmentId: '5', creatorId: null, publisherId: null } // Electronics & Telecommunication
+];
+
 export default function Admin() {
   const { hasPermission, user, getDepartmentQuota, getDepartmentUsers } = useAuth();
   const [departmentQuotas, setDepartmentQuotas] = useState<Record<string, any>>({});
   const [departmentUsers, setDepartmentUsers] = useState<Record<string, any[]>>({});
   const [loading, setLoading] = useState(true);
+  
+  // Debug logs
+  console.log('Admin page - user:', user);
+  console.log('Admin page - hasPermission(manage_system):', hasPermission('manage_system'));
+  console.log('Admin page - loading:', loading);
   
   // Faculty management state
   const [faculty, setFaculty] = useState(mockFaculty);
@@ -83,6 +97,11 @@ export default function Admin() {
     name: '', department: '', capacity: 30, type: 'Lecture', building: '', 
     floor: 1, hasProjector: false, hasSmartboard: false, hasAC: false, equipment: ''
   });
+
+  // Department roles management state
+  const [departmentRoles, setDepartmentRoles] = useState(mockDepartmentRoles);
+  const [accessControlDialogOpen, setAccessControlDialogOpen] = useState(false);
+  const [selectedDepartmentForAccess, setSelectedDepartmentForAccess] = useState<string | null>(null);
 
   // Load department data
   useEffect(() => {
@@ -151,6 +170,18 @@ export default function Admin() {
             <p className="text-muted-foreground">Manage departments, users, and system settings</p>
           </div>
         </div>
+
+        {/* Debug Info */}
+        <Card className="p-4 bg-yellow-50 border-yellow-200">
+          <div className="text-sm">
+            <p><strong>Debug Info:</strong></p>
+            <p>User: {user?.username} ({user?.role})</p>
+            <p>Has manage_system permission: {hasPermission('manage_system') ? 'Yes' : 'No'}</p>
+            <p>Loading: {loading ? 'Yes' : 'No'}</p>
+            <p>Departments count: {departments.length}</p>
+            <p>Faculty count: {faculty.length}</p>
+          </div>
+        </Card>
 
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -223,13 +254,13 @@ export default function Admin() {
           <TabsContent value="departments" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Department Overview</CardTitle>
+                <CardTitle>Department Management</CardTitle>
                 <CardDescription>
-                  Monitor department capacity and user distribution
+                  Manage departments, assign creators/publishers, and control access to faculty, subjects, and classrooms
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {departments.map(dept => {
                     const quota = departmentQuotas[dept.id] || { studentCount: 0, mentorCount: 0 };
                     const users = departmentUsers[dept.id] || [];
@@ -237,54 +268,426 @@ export default function Admin() {
                     const mentors = users.filter(u => u.role === 'mentor').length;
                     const studentUtilization = (students / 60) * 100;
                     const mentorUtilization = (mentors / 2) * 100;
+                    
+                    // Get department role assignments
+                    const departmentRole = departmentRoles.find(dr => dr.departmentId === dept.id);
+                    const creator = departmentRole?.creatorId ? faculty.find(f => f.id === departmentRole.creatorId) : null;
+                    const publisher = departmentRole?.publisherId ? faculty.find(f => f.id === departmentRole.publisherId) : null;
+                    const departmentFaculty = faculty.filter(f => f.department === dept.id);
+                    const departmentSubjects = subjects.filter(s => s.department === dept.id);
+                    const departmentClassrooms = classrooms.filter(c => c.department === dept.id);
 
                     return (
-                      <Card key={dept.id} className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Building className="h-5 w-5 text-primary" />
+                      <Card key={dept.id} className="p-6">
+                        <div className="space-y-4">
+                          {/* Department Header */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                <Building className="h-6 w-6 text-primary" />
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-semibold">{dept.name}</h3>
+                                <p className="text-sm text-muted-foreground">{dept.code}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={studentUtilization > 90 ? "destructive" : studentUtilization > 70 ? "secondary" : "outline"}>
+                                {students}/60 Students
+                              </Badge>
+                              <Badge variant={mentorUtilization > 90 ? "destructive" : mentorUtilization > 50 ? "secondary" : "outline"}>
+                                {mentors}/2 Mentors
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {/* Creator & Publisher Assignment */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                Department Creator
+                              </Label>
+                              <Select 
+                                value={creator?.id || ""} 
+                                onValueChange={(value) => {
+                                  setDepartmentRoles(prev => 
+                                    prev.map(dr => 
+                                      dr.departmentId === dept.id 
+                                        ? { ...dr, creatorId: value || null }
+                                        : dr
+                                    )
+                                  );
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Assign Creator" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="">Unassigned</SelectItem>
+                                  {departmentFaculty.map(faculty => (
+                                    <SelectItem key={faculty.id} value={faculty.id}>
+                                      {faculty.name} ({faculty.designation})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <p className="text-xs text-muted-foreground">
+                                Creates timetable drafts and manages department content
+                              </p>
+                              {creator && (
+                                <div className="flex items-center gap-2 p-2 bg-green-50 rounded-md">
+                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                  <span className="text-sm text-green-700">
+                                    {creator.name} has creator access
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4" />
+                                Department Publisher
+                              </Label>
+                              <Select 
+                                value={publisher?.id || ""} 
+                                onValueChange={(value) => {
+                                  setDepartmentRoles(prev => 
+                                    prev.map(dr => 
+                                      dr.departmentId === dept.id 
+                                        ? { ...dr, publisherId: value || null }
+                                        : dr
+                                    )
+                                  );
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Assign Publisher" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="">Unassigned</SelectItem>
+                                  {departmentFaculty.map(faculty => (
+                                    <SelectItem key={faculty.id} value={faculty.id}>
+                                      {faculty.name} ({faculty.designation})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <p className="text-xs text-muted-foreground">
+                                Reviews and publishes timetables, final approval authority
+                              </p>
+                              {publisher && (
+                                <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+                                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                                  <span className="text-sm text-blue-700">
+                                    {publisher.name} has publisher access
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Department Resources Management */}
+                          <div className="space-y-4">
+                            {/* Faculty Management */}
+                            <Card className="p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-5 w-5 text-blue-600" />
+                                  <h4 className="text-lg font-semibold">Faculty Members</h4>
+                                  <Badge variant="secondary">{departmentFaculty.length}</Badge>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setEditingFaculty(null);
+                                    setFacultyForm({
+                                      name: '', employeeId: '', email: '', department: dept.id, designation: '', 
+                                      specialization: '', experience: 0, phone: ''
+                                    });
+                                    setFacultyDialogOpen(true);
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Faculty
+                                </Button>
+                              </div>
+                              
+                              {departmentFaculty.length > 0 ? (
+                                <div className="space-y-2">
+                                  {departmentFaculty.map((member) => (
+                                    <div key={member.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h5 className="font-medium">{member.name}</h5>
+                                          <Badge variant="outline" className="text-xs">{member.designation}</Badge>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{member.specialization}</p>
+                                        <p className="text-xs text-muted-foreground">ID: {member.employeeId} • {member.experience} years exp.</p>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setEditingFaculty(member);
+                                            setFacultyForm(member);
+                                            setFacultyDialogOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            if (confirm(`Are you sure you want to remove ${member.name} from this department?`)) {
+                                              setFaculty(prev => prev.filter(f => f.id !== member.id));
+                                            }
+                                          }}
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                  <p>No faculty members assigned</p>
+                                  <p className="text-xs">Click "Add Faculty" to get started</p>
+                                </div>
+                              )}
+                            </Card>
+
+                            {/* Subjects Management */}
+                            <Card className="p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <BookOpen className="h-5 w-5 text-green-600" />
+                                  <h4 className="text-lg font-semibold">Subjects</h4>
+                                  <Badge variant="secondary">{departmentSubjects.length}</Badge>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setEditingSubject(null);
+                                    setSubjectForm({
+                                      name: '', code: '', department: dept.id, credits: 3, semester: 1, 
+                                      lecturesPerWeek: 3, labsPerWeek: 0, requiresLab: false, type: 'Theory'
+                                    });
+                                    setSubjectDialogOpen(true);
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Subject
+                                </Button>
+                              </div>
+                              
+                              {departmentSubjects.length > 0 ? (
+                                <div className="space-y-2">
+                                  {departmentSubjects.map((subject) => (
+                                    <div key={subject.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h5 className="font-medium">{subject.name}</h5>
+                                          <Badge variant="outline" className="text-xs">{subject.code}</Badge>
+                                          <Badge variant={subject.requiresLab ? "default" : "secondary"} className="text-xs">
+                                            {subject.type}
+                                          </Badge>
+                                        </div>
+                                        <div className="flex gap-4 text-xs text-muted-foreground">
+                                          <span>Semester {subject.semester}</span>
+                                          <span>{subject.credits} Credits</span>
+                                          <span>{subject.lecturesPerWeek} Lectures/week</span>
+                                          {subject.labsPerWeek > 0 && <span>{subject.labsPerWeek} Labs/week</span>}
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setEditingSubject(subject);
+                                            setSubjectForm(subject);
+                                            setSubjectDialogOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            if (confirm(`Are you sure you want to remove ${subject.name}?`)) {
+                                              setSubjects(prev => prev.filter(s => s.id !== subject.id));
+                                            }
+                                          }}
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                  <p>No subjects assigned</p>
+                                  <p className="text-xs">Click "Add Subject" to get started</p>
+                                </div>
+                              )}
+                            </Card>
+
+                            {/* Classrooms Management */}
+                            <Card className="p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                  <DoorOpen className="h-5 w-5 text-purple-600" />
+                                  <h4 className="text-lg font-semibold">Classrooms</h4>
+                                  <Badge variant="secondary">{departmentClassrooms.length}</Badge>
+                                </div>
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => {
+                                    setEditingClassroom(null);
+                                    setClassroomForm({
+                                      name: '', department: dept.id, capacity: 30, type: 'Lecture', building: '', 
+                                      floor: 1, hasProjector: false, hasSmartboard: false, hasAC: false, equipment: ''
+                                    });
+                                    setClassroomDialogOpen(true);
+                                  }}
+                                >
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Add Classroom
+                                </Button>
+                              </div>
+                              
+                              {departmentClassrooms.length > 0 ? (
+                                <div className="space-y-2">
+                                  {departmentClassrooms.map((classroom) => (
+                                    <div key={classroom.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <h5 className="font-medium">{classroom.name}</h5>
+                                          <Badge variant="outline" className="text-xs">{classroom.type}</Badge>
+                                          <Badge variant="secondary" className="text-xs">Capacity: {classroom.capacity}</Badge>
+                                        </div>
+                                        <div className="flex gap-4 text-xs text-muted-foreground mb-1">
+                                          <span>{classroom.building}, Floor {classroom.floor}</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                          {classroom.hasProjector && <Badge variant="outline" className="text-xs">Projector</Badge>}
+                                          {classroom.hasSmartboard && <Badge variant="outline" className="text-xs">Smart Board</Badge>}
+                                          {classroom.hasAC && <Badge variant="outline" className="text-xs">AC</Badge>}
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setEditingClassroom(classroom);
+                                            setClassroomForm(classroom);
+                                            setClassroomDialogOpen(true);
+                                          }}
+                                        >
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            if (confirm(`Are you sure you want to remove ${classroom.name}?`)) {
+                                              setClassrooms(prev => prev.filter(c => c.id !== classroom.id));
+                                            }
+                                          }}
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-center py-8 text-muted-foreground">
+                                  <DoorOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                  <p>No classrooms assigned</p>
+                                  <p className="text-xs">Click "Add Classroom" to get started</p>
+                                </div>
+                              )}
+                            </Card>
+                          </div>
+
+                          {/* Access Control */}
+                          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4" />
+                                Portal Access Control
+                              </h4>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedDepartmentForAccess(dept.id);
+                                  setAccessControlDialogOpen(true);
+                                }}
+                              >
+                                Manage Access
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label className="text-xs text-blue-700">Creator Permissions</Label>
+                                <div className="flex flex-wrap gap-1">
+                                  <Badge variant="outline" className="text-xs">Create Drafts</Badge>
+                                  <Badge variant="outline" className="text-xs">Manage Faculty</Badge>
+                                  <Badge variant="outline" className="text-xs">Edit Subjects</Badge>
+                                  <Badge variant="outline" className="text-xs">Book Classrooms</Badge>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-xs text-blue-700">Publisher Permissions</Label>
+                                <div className="flex flex-wrap gap-1">
+                                  <Badge variant="outline" className="text-xs">Review Drafts</Badge>
+                                  <Badge variant="outline" className="text-xs">Publish Timetables</Badge>
+                                  <Badge variant="outline" className="text-xs">Send Notifications</Badge>
+                                  <Badge variant="outline" className="text-xs">Final Approval</Badge>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Capacity Progress */}
+                          <div className="space-y-2">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Student Capacity</span>
+                                <span>{students}/60 ({Math.round(studentUtilization)}%)</span>
+                              </div>
+                              <Progress value={studentUtilization} className="h-2" />
                             </div>
                             <div>
-                              <h3 className="font-semibold">{dept.name}</h3>
-                              <p className="text-sm text-muted-foreground">{dept.code}</p>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Mentor Capacity</span>
+                                <span>{mentors}/2 ({Math.round(mentorUtilization)}%)</span>
+                              </div>
+                              <Progress value={mentorUtilization} className="h-2" />
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <Badge variant={studentUtilization > 90 ? "destructive" : studentUtilization > 70 ? "secondary" : "outline"}>
-                              {students}/60 Students
-                            </Badge>
-                            <Badge variant={mentorUtilization > 90 ? "destructive" : mentorUtilization > 50 ? "secondary" : "outline"}>
-                              {mentors}/2 Mentors
-                            </Badge>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-4 space-y-2">
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Student Capacity</span>
-                              <span>{students}/60 ({Math.round(studentUtilization)}%)</span>
-                            </div>
-                            <Progress value={studentUtilization} className="h-2" />
-                          </div>
-                          <div>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span>Mentor Capacity</span>
-                              <span>{mentors}/2 ({Math.round(mentorUtilization)}%)</span>
-                            </div>
-                            <Progress value={mentorUtilization} className="h-2" />
-                          </div>
-                        </div>
 
-                        {(studentUtilization > 90 || mentorUtilization > 90) && (
-                          <Alert className="mt-4">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertDescription>
-                              This department is near capacity. Consider reviewing quotas or managing registrations.
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                          {(studentUtilization > 90 || mentorUtilization > 90) && (
+                            <Alert>
+                              <AlertTriangle className="h-4 w-4" />
+                              <AlertDescription>
+                                This department is near capacity. Consider reviewing quotas or managing registrations.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </div>
                       </Card>
                     );
                   })}
@@ -1182,6 +1585,157 @@ export default function Admin() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Access Control Dialog */}
+        <Dialog open={accessControlDialogOpen} onOpenChange={setAccessControlDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Department Access Control</DialogTitle>
+              <DialogDescription>
+                Manage detailed permissions for creators and publishers
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              {selectedDepartmentForAccess && (() => {
+                const dept = departments.find(d => d.id === selectedDepartmentForAccess);
+                const departmentRole = departmentRoles.find(dr => dr.departmentId === selectedDepartmentForAccess);
+                const creator = departmentRole?.creatorId ? faculty.find(f => f.id === departmentRole.creatorId) : null;
+                const publisher = departmentRole?.publisherId ? faculty.find(f => f.id === departmentRole.publisherId) : null;
+
+                return (
+                  <div className="space-y-6">
+                    <div className="text-center p-4 bg-muted rounded-lg">
+                      <h3 className="text-lg font-semibold">{dept?.name}</h3>
+                      <p className="text-sm text-muted-foreground">{dept?.code}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Creator Permissions */}
+                      <Card className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <User className="h-5 w-5 text-blue-600" />
+                            <h4 className="font-semibold">Creator Permissions</h4>
+                          </div>
+                          
+                          {creator ? (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 p-2 bg-green-50 rounded-md">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <span className="text-sm font-medium text-green-700">
+                                  {creator.name}
+                                </span>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label className="text-sm font-medium">Granted Permissions:</Label>
+                                <div className="grid grid-cols-1 gap-2">
+                                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                                    <span className="text-sm">Create Timetable Drafts</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                                    <span className="text-sm">Manage Faculty Assignments</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                                    <span className="text-sm">Edit Subject Details</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                                    <span className="text-sm">Book Classrooms</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-blue-50 rounded">
+                                    <span className="text-sm">Submit for Review</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <User className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>No creator assigned</p>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+
+                      {/* Publisher Permissions */}
+                      <Card className="p-4">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-purple-600" />
+                            <h4 className="font-semibold">Publisher Permissions</h4>
+                          </div>
+                          
+                          {publisher ? (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 p-2 bg-purple-50 rounded-md">
+                                <CheckCircle className="h-4 w-4 text-purple-600" />
+                                <span className="text-sm font-medium text-purple-700">
+                                  {publisher.name}
+                                </span>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label className="text-sm font-medium">Granted Permissions:</Label>
+                                <div className="grid grid-cols-1 gap-2">
+                                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                                    <span className="text-sm">Review Drafts</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                                    <span className="text-sm">Publish Timetables</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                                    <span className="text-sm">Send Notifications</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                                    <span className="text-sm">Final Approval Authority</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div className="flex items-center justify-between p-2 bg-purple-50 rounded">
+                                    <span className="text-sm">Reject/Request Changes</span>
+                                    <CheckCircle className="h-4 w-4 text-green-600" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>No publisher assigned</p>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    </div>
+
+                    <Alert>
+                      <ShieldCheck className="h-4 w-4" />
+                      <AlertDescription>
+                        <strong>Access Control:</strong> Only assigned creators and publishers can access their respective features.
+                        Admin has override access to all department functions.
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                );
+              })()}
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setAccessControlDialogOpen(false)}>
+                Close
+              </Button>
+              <Button>
+                Save Access Settings
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
