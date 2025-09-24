@@ -88,43 +88,60 @@ export default function TimetableEditPage() {
   const mockClasses = [
     {
       id: 1,
-      timetable: parseInt(id || '0'),
-      subject: 1,
-      faculty: 1,
-      student_batch: 1,
-      classroom: 1,
-      timeslot: 1,
-      class_type: 'Lecture' as const
+      timetable_id: parseInt(id || '0'),
+      subject_id: 1,
+      faculty_id: 1,
+      batch_id: 1,
+      classroom_id: 1,
+      time_slot_id: 1,
+      class_type: 'lecture' as const,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z'
     },
     {
       id: 2,
-      timetable: parseInt(id || '0'),
-      subject: 2,
-      faculty: 2,
-      student_batch: 1,
-      classroom: 2,
-      timeslot: 6,
-      class_type: 'Lab' as const
+      timetable_id: parseInt(id || '0'),
+      subject_id: 2,
+      faculty_id: 2,
+      batch_id: 1,
+      classroom_id: 2,
+      time_slot_id: 6,
+      class_type: 'lab' as const,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z'
     }
   ];
 
   const mockFaculty = [
-    { id: 1, name: 'Dr. John Smith', employee_id: 'FAC001', department: 'Computer Science' },
-    { id: 2, name: 'Prof. Jane Wilson', employee_id: 'FAC002', department: 'Computer Science' }
+    { id: 1, name: 'Dr. John Smith', employee_id: 'FAC001', department_id: 1, is_active: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+    { id: 2, name: 'Prof. Jane Wilson', employee_id: 'FAC002', department_id: 1, is_active: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' }
   ];
 
   const mockSubjects = [
-    { id: 1, name: 'Data Structures', code: 'CS201', department: 'Computer Science', credits: 4, lectures_per_week: 3, labs_per_week: 1, requires_lab: true },
-    { id: 2, name: 'Algorithms', code: 'CS202', department: 'Computer Science', credits: 3, lectures_per_week: 3, labs_per_week: 0, requires_lab: false }
+    { id: 1, name: 'Data Structures', code: 'CS201', department_id: 1, credits: 4, lectures_per_week: 3, labs_per_week: 1, requires_lab: true, is_active: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+    { id: 2, name: 'Algorithms', code: 'CS202', department_id: 1, credits: 3, lectures_per_week: 3, labs_per_week: 0, requires_lab: false, is_active: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' }
   ];
 
   const mockClassrooms = [
-    { id: 1, name: 'Room 101', capacity: 60, type: 'Lecture' as const, has_projector: true, has_smartboard: true },
-    { id: 2, name: 'Lab 201', capacity: 30, type: 'Lab' as const, has_projector: false, has_smartboard: false }
+    { id: 1, room_number: 'Room 101', building: 'Main Building', capacity: 60, type: 'lecture' as const, has_projector: true, has_smartboard: true, has_ac: true, has_computer_lab: false, is_active: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+    { id: 2, room_number: 'Lab 201', building: 'Main Building', capacity: 30, type: 'lab' as const, has_projector: false, has_smartboard: false, has_ac: true, has_computer_lab: true, is_active: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' }
   ];
 
   const mockBatches = [
-    { id: 1, name: 'CS-2023-A', year: 2023, semester: 1, strength: 45, department: 'Computer Science', subjects: [1, 2] }
+    { 
+      id: 1, 
+      name: 'CS-2023-A', 
+      batch_code: 'CS23A',
+      department_id: 1,
+      year: 2023,
+      semester: 1,
+      strength: 45,
+      academic_year: '2023-24',
+      intake_year: 2023,
+      is_active: true,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z'
+    }
   ];
 
   if (isLoading) {

@@ -247,21 +247,28 @@ export interface ScheduledClass {
   timetable_id: number;
   subject_id: number;
   faculty_id: number;
-  student_batch_id: number;
+  batch_id: number;  // Matches complete schema
   classroom_id: number;
-  timeslot_id: number;
-  class_type: 'Lecture' | 'Lab';
+  time_slot_id: number;  // Matches complete schema
+  class_type: 'lecture' | 'lab' | 'tutorial' | 'seminar' | 'practical';  // Matches complete schema
+  week_pattern?: string;
+  recurring?: boolean;
+  special_notes?: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface CreateScheduledClassRequest {
   timetable_id: number;
   subject_id: number;
   faculty_id: number;
-  student_batch_id: number;
+  batch_id: number;
   classroom_id: number;
-  timeslot_id: number;
-  class_type: 'Lecture' | 'Lab';
+  time_slot_id: number;
+  class_type: 'lecture' | 'lab' | 'tutorial' | 'seminar' | 'practical';
+  week_pattern?: string;
+  recurring?: boolean;
+  special_notes?: string;
 }
 
 // API Response types

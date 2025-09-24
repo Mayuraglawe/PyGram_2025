@@ -128,7 +128,7 @@ export default function RoleSelection() {
               <Users className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Py-Gram 2k25</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to The Academic Compass</h1>
           <p className="text-lg text-gray-600">College Event Management System</p>
           <p className="text-sm text-gray-500 mt-2">Please select your role to continue</p>
         </div>

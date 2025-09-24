@@ -74,7 +74,7 @@ export default function Header() {
             <LogoImage />
             <div className="flex flex-col">
               <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-                Py-Gram 2k25
+                The Academic Compass
               </span>
               <span className="text-xs text-muted-foreground font-medium">AI-Powered Timetables</span>
             </div>
@@ -108,7 +108,7 @@ export default function Header() {
           <LogoImage />
           <div className="flex flex-col">
             <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              Py-Gram 2k25
+              The Academic Compass
             </span>
             <span className="text-xs text-muted-foreground font-medium">AI-Powered Timetables</span>
           </div>

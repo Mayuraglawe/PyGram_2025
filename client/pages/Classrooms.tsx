@@ -42,11 +42,13 @@ export default function ClassroomsPage() {
   const [formData, setFormData] = useState<ClassroomFormData>({
     room_number: '',
     building: '',
-    floor: 1,
+    floor_number: 1,
     capacity: 30,
     type: 'lecture',
     has_projector: false,
-    has_whiteboard: false
+    has_smartboard: false,
+    has_ac: false,
+    has_computer_lab: false
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,11 +74,15 @@ export default function ClassroomsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      room_number: '',
+      building: '',
+      floor_number: 1,
       capacity: 30,
       type: 'lecture',
       has_projector: false,
-      has_smartboard: false
+      has_smartboard: false,
+      has_ac: false,
+      has_computer_lab: false
     });
     setSelectedClassroom(null);
   };
@@ -85,10 +91,15 @@ export default function ClassroomsPage() {
     setSelectedClassroom(classroom);
     setFormData({
       room_number: classroom.room_number,
+      building: classroom.building || '',
+      floor_number: classroom.floor_number || 1,
       capacity: classroom.capacity,
       type: classroom.type,
+      equipment: classroom.equipment || '',
       has_projector: classroom.has_projector || false,
-      has_smartboard: classroom.has_smartboard || false
+      has_smartboard: classroom.has_smartboard || false,
+      has_ac: classroom.has_ac || false,
+      has_computer_lab: classroom.has_computer_lab || false
     });
     setIsEditDialogOpen(true);
   };

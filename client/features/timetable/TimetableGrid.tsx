@@ -48,9 +48,9 @@ export function TimetableGrid({ classes, highlightConflicts, conflicts = [] }: T
                           highlightConflicts && conflicts.includes(c.id) && "bg-destructive/90",
                         )}
                       >
-                        <div className="font-semibold leading-5 truncate">{c.subject_name ?? `Subject ${c.subject}`}</div>
-                        <div className="opacity-90 truncate">{c.faculty_name ?? `Faculty ${c.faculty}`}</div>
-                        <div className="opacity-80 truncate">{c.room_name ?? `Room ${c.classroom}`}</div>
+                        <div className="font-semibold leading-5 truncate">{c.subject_name ?? `Subject ${c.subject_id}`}</div>
+                        <div className="opacity-90 truncate">{c.faculty_name ?? `Faculty ${c.faculty_id}`}</div>
+                        <div className="opacity-80 truncate">{c.room_name ?? `Room ${c.classroom_id}`}</div>
                         <div className="opacity-70">{c.class_type}</div>
                       </div>
                     ))}

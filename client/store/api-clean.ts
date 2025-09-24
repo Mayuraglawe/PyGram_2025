@@ -80,7 +80,7 @@ async function handleSupabaseRequest(urlPath: string, method: string, body?: any
       const { data, error } = await supabase
         .from("classrooms")
         .select("*")
-        .order("name");
+        .order("room_number");
       
       if (error) throw error;
       return { data: data || [] };
@@ -92,7 +92,7 @@ async function handleSupabaseRequest(urlPath: string, method: string, body?: any
         .from("student_batches")
         .select(`
           *,
-          batch_subjects (
+          batch_subject_assignments (
             subject_id,
             subjects (*)
           )
@@ -104,7 +104,7 @@ async function handleSupabaseRequest(urlPath: string, method: string, body?: any
       // Transform the data to match expected format
       const transformedData = data?.map((batch: any) => ({
         ...batch,
-        subjects: batch.batch_subjects?.map((bs: any) => bs.subject_id) || []
+        subjects: batch.batch_subject_assignments?.map((bs: any) => bs.subject_id) || []
       })) || [];
       
       return { data: transformedData };

@@ -16,7 +16,7 @@ router.get('/', async (req: Request, res: Response) => {
       .order('name');
     
     if (department) {
-      query = query.eq('department', department);
+      query = query.eq('department_id', department);
     }
 
     const { data, error } = await query;

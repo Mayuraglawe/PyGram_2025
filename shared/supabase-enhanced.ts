@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Enhanced Database types for Py-Gram 2k25 with Event Management System
+// Enhanced Database types for The Academic Compass with Event Management System
 export interface Database {
   public: {
     Tables: {

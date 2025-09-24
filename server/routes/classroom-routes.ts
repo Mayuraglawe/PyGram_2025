@@ -13,7 +13,7 @@ router.get('/', async (req: Request, res: Response) => {
     let query = supabase
       .from('classrooms')
       .select('*')
-      .order('name');
+      .order('room_number');
     
     if (type) {
       query = query.eq('type', type);

@@ -40,10 +40,13 @@ export default function BatchesPage() {
   const [selectedBatch, setSelectedBatch] = useState<any>(null);
   const [formData, setFormData] = useState<BatchFormData>({
     name: '',
+    batch_code: '',
     department_id: '',
     year: 1,
     semester: 1,
-    strength: 60
+    strength: 60,
+    academic_year: new Date().getFullYear().toString(),
+    intake_year: new Date().getFullYear()
   });
 
   const departments = [
@@ -63,7 +66,8 @@ export default function BatchesPage() {
         // Update existing batch
         const updateData: UpdateStudentBatchRequest = {
           ...formData,
-          department_id: parseInt(formData.department_id)
+          department_id: parseInt(formData.department_id),
+          class_coordinator_id: formData.class_coordinator_id ? parseInt(formData.class_coordinator_id) : undefined
         };
         await updateBatch({ id: selectedBatch.id, data: updateData }).unwrap();
         setIsEditDialogOpen(false);
@@ -86,10 +90,13 @@ export default function BatchesPage() {
   const resetForm = () => {
     setFormData({
       name: '',
+      batch_code: '',
       department_id: '',
       year: 1,
       semester: 1,
-      strength: 60
+      strength: 60,
+      academic_year: new Date().getFullYear().toString(),
+      intake_year: new Date().getFullYear()
     });
     setSelectedBatch(null);
   };
@@ -98,10 +105,15 @@ export default function BatchesPage() {
     setSelectedBatch(batch);
     setFormData({
       name: batch.name,
+      batch_code: batch.batch_code || '',
       department_id: batch.department_id?.toString() || '',
       year: batch.year,
       semester: batch.semester,
-      strength: batch.strength
+      section: batch.section || '',
+      strength: batch.strength,
+      academic_year: batch.academic_year || new Date().getFullYear().toString(),
+      class_coordinator_id: batch.class_coordinator_id?.toString() || '',
+      intake_year: batch.intake_year || new Date().getFullYear()
     });
     setIsEditDialogOpen(true);
   };

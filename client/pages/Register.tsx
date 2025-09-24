@@ -296,7 +296,7 @@ export default function Register() {
               <UserPlus className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">Join Py-Gram 2k25</CardTitle>
+          <CardTitle className="text-2xl font-bold">Join The Academic Compass</CardTitle>
           <CardDescription>
             Create your account to access the college event management system
           </CardDescription>

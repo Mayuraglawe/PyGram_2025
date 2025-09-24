@@ -108,7 +108,7 @@ export default function TimetableEditor({
   React.useEffect(() => {
     const grid = new Map();
     classes.forEach(cls => {
-      const slot = timeSlots.find(slot => slot.id === cls.timeslot.toString());
+      const slot = timeSlots.find(slot => slot.id === cls.time_slot_id.toString());
       if (slot) {
         const key = `${slot.day}-${slot.time}`;
         grid.set(key, cls);
@@ -138,11 +138,11 @@ export default function TimetableEditor({
       const batchMap = new Map();
 
       classesInSlot.forEach(cls => {
-        const key = `${cls.timeslot}`;
+        const key = `${cls.time_slot_id}`;
         
         // Faculty conflicts
-        if (facultyMap.has(cls.faculty)) {
-          const conflictKey = `faculty-${cls.faculty}-${timeSlot}`;
+        if (facultyMap.has(cls.faculty_id)) {
+          const conflictKey = `faculty-${cls.faculty_id}-${timeSlot}`;
           const existing = conflictMap.get(conflictKey) || [];
           existing.push({
             type: 'faculty',
@@ -151,12 +151,12 @@ export default function TimetableEditor({
           });
           conflictMap.set(conflictKey, existing);
         } else {
-          facultyMap.set(cls.faculty, cls);
+          facultyMap.set(cls.faculty_id, cls);
         }
 
         // Classroom conflicts
-        if (classroomMap.has(cls.classroom)) {
-          const conflictKey = `classroom-${cls.classroom}-${timeSlot}`;
+        if (classroomMap.has(cls.classroom_id)) {
+          const conflictKey = `classroom-${cls.classroom_id}-${timeSlot}`;
           const existing = conflictMap.get(conflictKey) || [];
           existing.push({
             type: 'classroom',
@@ -165,12 +165,12 @@ export default function TimetableEditor({
           });
           conflictMap.set(conflictKey, existing);
         } else {
-          classroomMap.set(cls.classroom, cls);
+          classroomMap.set(cls.classroom_id, cls);
         }
 
         // Batch conflicts
-        if (batchMap.has(cls.student_batch)) {
-          const conflictKey = `batch-${cls.student_batch}-${timeSlot}`;
+        if (batchMap.has(cls.batch_id)) {
+          const conflictKey = `batch-${cls.batch_id}-${timeSlot}`;
           const existing = conflictMap.get(conflictKey) || [];
           existing.push({
             type: 'batch',
@@ -179,7 +179,7 @@ export default function TimetableEditor({
           });
           conflictMap.set(conflictKey, existing);
         } else {
-          batchMap.set(cls.student_batch, cls);
+          batchMap.set(cls.batch_id, cls);
         }
       });
     });
@@ -271,7 +271,7 @@ export default function TimetableEditor({
   };
 
   const getClassroomName = (classroomId: number) => {
-    return classrooms.find(c => c.id === classroomId)?.name || 'Unknown Room';
+    return classrooms.find(c => c.id === classroomId)?.room_number || 'Unknown Room';
   };
 
   const getBatchName = (batchId: number) => {
@@ -374,25 +374,25 @@ export default function TimetableEditor({
                           className={`h-full rounded-lg p-2 text-xs cursor-pointer transition-all hover:shadow-md ${
                             hasConflicts
                               ? 'bg-red-100 border-2 border-red-300 text-red-800'
-                              : cls.class_type === 'Lab'
+                              : cls.class_type === 'lab'
                               ? 'bg-blue-100 border-2 border-blue-300 text-blue-800'
                               : 'bg-green-100 border-2 border-green-300 text-green-800'
                           }`}
                         >
                           <div className="space-y-1">
                             <div className="font-semibold truncate">
-                              {getSubjectName(cls.subject)}
+                              {getSubjectName(cls.subject_id)}
                             </div>
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              <span className="truncate">{getFacultyName(cls.faculty)}</span>
+                              <span className="truncate">{getFacultyName(cls.faculty_id)}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
-                              <span className="truncate">{getClassroomName(cls.classroom)}</span>
+                              <span className="truncate">{getClassroomName(cls.classroom_id)}</span>
                             </div>
                             <Badge
-                              variant={cls.class_type === 'Lab' ? 'default' : 'secondary'}
+                              variant={cls.class_type === 'lab' ? 'default' : 'secondary'}
                               className="text-xs"
                             >
                               {cls.class_type}
@@ -430,9 +430,9 @@ export default function TimetableEditor({
               <div>
                 <Label>Subject</Label>
                 <Select
-                  value={selectedClass.subject.toString()}
+                  value={selectedClass.subject_id.toString()}
                   onValueChange={(value) => {
-                    setSelectedClass({ ...selectedClass, subject: parseInt(value) });
+                    setSelectedClass({ ...selectedClass, subject_id: parseInt(value) });
                     setHasUnsavedChanges(true);
                   }}
                   disabled={isReadOnly || !canEdit}
@@ -453,9 +453,9 @@ export default function TimetableEditor({
               <div>
                 <Label>Faculty</Label>
                 <Select
-                  value={selectedClass.faculty.toString()}
+                  value={selectedClass.faculty_id.toString()}
                   onValueChange={(value) => {
-                    setSelectedClass({ ...selectedClass, faculty: parseInt(value) });
+                    setSelectedClass({ ...selectedClass, faculty_id: parseInt(value) });
                     setHasUnsavedChanges(true);
                   }}
                   disabled={isReadOnly || !canEdit}
@@ -476,9 +476,9 @@ export default function TimetableEditor({
               <div>
                 <Label>Classroom</Label>
                 <Select
-                  value={selectedClass.classroom.toString()}
+                  value={selectedClass.classroom_id.toString()}
                   onValueChange={(value) => {
-                    setSelectedClass({ ...selectedClass, classroom: parseInt(value) });
+                    setSelectedClass({ ...selectedClass, classroom_id: parseInt(value) });
                     setHasUnsavedChanges(true);
                   }}
                   disabled={isReadOnly || !canEdit}
@@ -489,7 +489,7 @@ export default function TimetableEditor({
                   <SelectContent>
                     {classrooms.map(room => (
                       <SelectItem key={room.id} value={room.id.toString()}>
-                        {room.name} (Capacity: {room.capacity})
+                        {room.room_number} (Capacity: {room.capacity})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -500,7 +500,7 @@ export default function TimetableEditor({
                 <Label>Class Type</Label>
                 <Select
                   value={selectedClass.class_type}
-                  onValueChange={(value: 'Lecture' | 'Lab') => {
+                  onValueChange={(value: 'lecture' | 'lab') => {
                     setSelectedClass({ ...selectedClass, class_type: value });
                     setHasUnsavedChanges(true);
                   }}
@@ -510,8 +510,8 @@ export default function TimetableEditor({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Lecture">Lecture</SelectItem>
-                    <SelectItem value="Lab">Lab</SelectItem>
+                    <SelectItem value="lecture">Lecture</SelectItem>
+                    <SelectItem value="lab">Lab</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -525,7 +525,7 @@ export default function TimetableEditor({
                     onClick={() => {
                       if (onClassUpdated) onClassUpdated(selectedClass);
                       // Update the grid
-                      const slot = timeSlots.find(s => s.id === selectedClass.timeslot.toString());
+                      const slot = timeSlots.find(s => s.id === selectedClass.time_slot_id.toString());
                       if (slot) {
                         const key = `${slot.day}-${slot.time}`;
                         const newGrid = new Map(timetableGrid);

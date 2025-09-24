@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Database types for Py-Gram 2k25 timetable system - Updated to match complete schema
+// Database types for The Academic Compass timetable system - Updated to match complete schema
 export interface Database {
   public: {
     Tables: {

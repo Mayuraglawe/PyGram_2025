@@ -6,6 +6,7 @@ import {
   StudentBatch, 
   Timetable, 
   ScheduledClass,
+  TimeSlot,
   CreateFacultyRequest,
   CreateSubjectRequest,
   CreateClassroomRequest,
@@ -18,6 +19,28 @@ import {
   UpdateTimetableRequest,
   ApiResponse
 } from "@shared/api.js";
+
+// Re-export types for use in components
+export type {
+  Faculty,
+  Subject,
+  Classroom,
+  StudentBatch,
+  Timetable,
+  ScheduledClass,
+  TimeSlot,
+  CreateFacultyRequest,
+  CreateSubjectRequest,
+  CreateClassroomRequest,
+  CreateStudentBatchRequest,
+  CreateTimetableRequest,
+  UpdateFacultyRequest,
+  UpdateSubjectRequest,
+  UpdateClassroomRequest,
+  UpdateStudentBatchRequest,
+  UpdateTimetableRequest,
+  ApiResponse
+};
 
 export interface LoginRequest { username: string; password: string }
 export interface LoginResponse { access: string; refresh: string }

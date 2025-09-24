@@ -4,12 +4,12 @@ export function findConflicts(classes: ScheduledClass[]): number[] {
   const conflicts = new Set<number>();
   const byKey = new Map<string, ScheduledClass[]>();
   const keyFor = (c: ScheduledClass, dims: (keyof ScheduledClass)[]) =>
-    dims.map((d) => String(c[d])).join("|") + "|" + c.timeslot;
+    dims.map((d) => String(c[d])).join("|") + "|" + c.time_slot_id;
 
   const dimsList: (keyof ScheduledClass)[][] = [
-    ["faculty"],
-    ["student_batch"],
-    ["classroom"],
+    ["faculty_id"],
+    ["batch_id"],
+    ["classroom_id"],
   ];
 
   for (const dims of dimsList) {
