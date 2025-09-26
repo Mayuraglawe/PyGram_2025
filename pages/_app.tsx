@@ -19,8 +19,15 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   // Routes that should not use AppLayout
-  const noLayoutRoutes = ['/signin', '/register', '/role-selection'];
+  const noLayoutRoutes = ['/', '/signin', '/register', '/role-selection'];
   const useLayout = !noLayoutRoutes.includes(router.pathname);
+  
+  console.log('🎯 App Layout Check:', {
+    pathname: router.pathname,
+    noLayoutRoutes,
+    useLayout,
+    timestamp: new Date().toISOString()
+  });
 
   return (
     <Provider store={store}>

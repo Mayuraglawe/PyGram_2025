@@ -32,20 +32,41 @@ export function NextDepartmentRouter({ children }: { children: React.ReactNode }
   // ============================================================================
 
   useEffect(() => {
-    if (authLoading || deptLoading) return;
+    console.log('🏢 NextDepartmentRouter Check:', {
+      pathname: router.pathname,
+      isAuthenticated,
+      authLoading,
+      deptLoading,
+      user: user?.username,
+      userDepartments: userDepartments?.length,
+      timestamp: new Date().toISOString()
+    });
+
+    if (authLoading || deptLoading) {
+      console.log('⏳ Waiting for auth/dept loading to complete');
+      return;
+    }
 
     // Public routes that don't require authentication
-    const publicRoutes = ['/signin', '/register', '/role-selection'];
+    const publicRoutes = ['/signin', '/register', '/role-selection', '/'];
     const isPublicRoute = publicRoutes.includes(router.pathname);
+
+    console.log('🔍 Route Analysis:', {
+      pathname: router.pathname,
+      isPublicRoute,
+      publicRoutes
+    });
 
     // If not authenticated and not on a public route, redirect to signin
     if (!isAuthenticated && !isPublicRoute) {
+      console.log('🚨 Redirecting to signin - not authenticated');
       router.push('/signin');
       return;
     }
 
     // If authenticated but no departments assigned, redirect to role selection
     if (isAuthenticated && user && (!userDepartments || userDepartments.length === 0) && !isPublicRoute) {
+      console.log('🚨 Redirecting to role-selection - no departments');
       router.push('/role-selection');
       return;
     }

@@ -18,6 +18,22 @@ export default function SignInPage() {
   const [searchParams] = useSearchParams();
   const preSelectedRole = searchParams.get('role');
   
+  // Add comprehensive logging
+  // Add comprehensive debugging
+  const storedUser = typeof window !== 'undefined' ? localStorage.getItem('auth_user') : null;
+  const storedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  
+  console.log('🔍 SignIn Page Rendered:', {
+    isAuthenticated,
+    authLoading,
+    preSelectedRole,
+    hasStoredUser: !!storedUser,
+    hasStoredToken: !!storedToken,
+    storedUserData: storedUser ? JSON.parse(storedUser).username : null,
+    currentPath: typeof window !== 'undefined' ? window.location.pathname : 'unknown',
+    timestamp: new Date().toISOString()
+  });
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -105,8 +121,16 @@ export default function SignInPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('🔄 SignIn Redirect Check:', {
+      isAuthenticated,
+      authLoading,
+      shouldRedirect: isAuthenticated && !authLoading,
+      timestamp: new Date().toISOString()
+    });
+    
     if (isAuthenticated && !authLoading) {
-      navigate('/');
+      console.log('🎯 Redirecting to dashboard from SignIn page');
+      navigate('/dashboard');
     }
   }, [isAuthenticated, authLoading, navigate]);
 
@@ -162,7 +186,7 @@ export default function SignInPage() {
       const roleForLogin = preSelectedRole as 'admin' | 'creator' | 'publisher' | 'student' | undefined;
       const success = await login(username, password, roleForLogin);
       if (success) {
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setError('Invalid username or password. Please check your credentials and try again.');
       }
@@ -367,6 +391,23 @@ export default function SignInPage() {
           <p className="text-xs text-gray-500">
             This is a demonstration system. In production, use secure authentication.
           </p>
+          
+          {/* Debug button to clear localStorage */}
+          <div className="flex justify-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                localStorage.clear();
+                console.log('🧹 localStorage cleared');
+                window.location.reload();
+              }}
+              className="text-xs"
+            >
+              Clear Cache & Reload
+            </Button>
+          </div>
+          
           <Link href="/role-selection" className="text-xs text-primary hover:underline">
             ← Back to Role Selection
           </Link>

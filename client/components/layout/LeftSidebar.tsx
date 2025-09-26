@@ -61,7 +61,7 @@ export default function LeftSidebar() {
   }, [navigate]);
 
   const navItems: NavItem[] = [
-    { to: "/", icon: Home, label: "Dashboard" },
+    { to: "/dashboard", icon: Home, label: "Dashboard" },
     { to: "/events", icon: Calendar, label: "Events", permission: "view_public_events" },
     { to: "/conflict-resolution", icon: AlertCircle, label: "Queue", permission: "view_event_queue" },
     { to: "/faculty", icon: Users, label: "Faculty", permission: "view_department_data" },

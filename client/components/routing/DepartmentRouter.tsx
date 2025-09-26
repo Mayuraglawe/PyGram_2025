@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from '@/lib/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDepartment } from '@/contexts/DepartmentContext';
 import { Loader2, Building2, Users, Shield } from 'lucide-react';
@@ -35,7 +35,7 @@ export function DepartmentRouter({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated || !user || isLoading) return;
 
     // Skip department routing for public pages
-    const publicPaths = ['/signin', '/register', '/role-selection'];
+    const publicPaths = ['/', '/signin', '/register', '/role-selection'];
     if (publicPaths.includes(location.pathname)) return;
 
     // Admin users don't need department routing (they have access to all)

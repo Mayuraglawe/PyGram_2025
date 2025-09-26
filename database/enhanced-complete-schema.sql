@@ -547,7 +547,36 @@ CREATE TABLE assignment_submissions (
 );
 
 -- ============================================================================
--- 6. COMMUNICATION AND NOTIFICATION SYSTEM
+-- 6. SYSTEM CONFIGURATION AND PREFERENCES
+-- ============================================================================
+
+-- System Settings table - Global configuration
+CREATE TABLE system_settings (
+    id SERIAL PRIMARY KEY,
+    setting_key VARCHAR(100) NOT NULL UNIQUE,
+    setting_value TEXT,
+    setting_type VARCHAR(20) DEFAULT 'string' CHECK (setting_type IN ('string', 'number', 'boolean', 'json')),
+    description TEXT,
+    is_system_setting BOOLEAN DEFAULT false, -- System vs user-configurable
+    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Department Preferences - Department-specific settings
+CREATE TABLE department_preferences (
+    id SERIAL PRIMARY KEY,
+    department_id INTEGER NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+    preference_key VARCHAR(100) NOT NULL,
+    preference_value TEXT,
+    academic_year VARCHAR(20),
+    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    CONSTRAINT unique_dept_preference UNIQUE(department_id, preference_key, academic_year)
+);
+
+-- ============================================================================
+-- 7. COMMUNICATION AND NOTIFICATION SYSTEM
 -- ============================================================================
 
 -- Notifications table
@@ -600,7 +629,7 @@ CREATE TABLE announcements (
 );
 
 -- ============================================================================
--- 7. PERFORMANCE INDEXES
+-- 8. PERFORMANCE INDEXES
 -- ============================================================================
 
 -- User management indexes
@@ -651,8 +680,14 @@ CREATE INDEX idx_notifications_read ON notifications(is_read);
 CREATE INDEX idx_announcements_published ON announcements(is_published);
 CREATE INDEX idx_announcements_target ON announcements(target_audience, target_department_id);
 
+-- System configuration indexes
+CREATE INDEX idx_system_settings_key ON system_settings(setting_key);
+CREATE INDEX idx_system_settings_type ON system_settings(setting_type);
+CREATE INDEX idx_department_preferences_dept ON department_preferences(department_id);
+CREATE INDEX idx_department_preferences_key ON department_preferences(preference_key);
+
 -- ============================================================================
--- 8. TRIGGERS AND FUNCTIONS
+-- 9. TRIGGERS AND FUNCTIONS
 -- ============================================================================
 
 -- Function to automatically update the updated_at timestamp
@@ -676,13 +711,15 @@ CREATE TRIGGER update_timetables_updated_at BEFORE UPDATE ON timetables FOR EACH
 CREATE TRIGGER update_scheduled_classes_updated_at BEFORE UPDATE ON scheduled_classes FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_assignments_updated_at BEFORE UPDATE ON assignments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_announcements_updated_at BEFORE UPDATE ON announcements FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_system_settings_updated_at BEFORE UPDATE ON system_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_department_preferences_updated_at BEFORE UPDATE ON department_preferences FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Add foreign key constraints after all tables are created
 ALTER TABLE user_role_assignments ADD CONSTRAINT fk_user_role_assignments_dept FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL;
 ALTER TABLE departments ADD CONSTRAINT fk_departments_hod FOREIGN KEY (head_of_department_id) REFERENCES faculty(id) ON DELETE SET NULL;
 
 -- ============================================================================
--- 9. INITIAL DATA SETUP
+-- 10. INITIAL DATA SETUP
 -- ============================================================================
 
 -- Insert default user roles

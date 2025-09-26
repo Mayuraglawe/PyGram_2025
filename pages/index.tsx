@@ -1,5 +1,5 @@
-import Index from "../client/pages/Index";
+import LandingPage from "../client/pages/LandingPage";
 
 export default function HomePage() {
-  return <Index />;
+  return <LandingPage />;
 }

@@ -1,5 +1,5 @@
 -- ============================================================================
--- PYGRAM 2025 - COMPREHENSIVE SAMPLE DATA
+-- SMART CLASSROOM & TIMETABLE SCHEDULING SYSTEM - COMPREHENSIVE SAMPLE DATA
 -- Run this AFTER creating the schema to populate with realistic test data
 -- ============================================================================
 

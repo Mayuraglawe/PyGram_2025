@@ -246,22 +246,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
   ];
 
   useEffect(() => {
+    console.log('🔐 AuthProvider Initialization');
+    
     // Check for stored authentication
     const storedUser = localStorage.getItem('auth_user');
     const storedToken = localStorage.getItem('auth_token');
     
+    console.log('🔍 Stored Auth Check:', {
+      hasStoredUser: !!storedUser,
+      hasStoredToken: !!storedToken,
+      storedUserData: storedUser ? JSON.parse(storedUser).username : null,
+      timestamp: new Date().toISOString()
+    });
+    
     if (storedUser && storedToken) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        console.log('✅ Restoring user from localStorage:', parsedUser.username);
         setUser(parsedUser);
       } catch (error) {
-        console.error('Failed to parse stored user:', error);
+        console.error('❌ Failed to parse stored user:', error);
         localStorage.removeItem('auth_user');
         localStorage.removeItem('auth_token');
       }
+    } else {
+      console.log('ℹ️ No stored authentication found');
     }
     
     setIsLoading(false);
+    console.log('🔐 AuthProvider Initialization Complete');
   }, []);
 
   const login = async (username: string, password: string, role?: UserRole | 'creator' | 'publisher'): Promise<boolean> => {
@@ -718,8 +731,8 @@ export function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    // Redirect to role selection page for first-time users
-    window.location.href = '/role-selection';
+    // Redirect to signin page for authentication
+    window.location.href = '/signin';
     return null;
   }
 

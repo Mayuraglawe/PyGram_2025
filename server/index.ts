@@ -17,6 +17,9 @@ import classroomRoutes from "./routes/classroom-routes";
 import batchRoutes from "./routes/batch-routes";
 import timetableRoutes from "./routes/timetable-routes";
 import newGenerationRoutes from "./routes/new-generation-routes";
+import smartClassroomRoutes from "./routes/smart-classroom-routes";
+import aiTimetableRoutes from "./routes/ai-timetable-routes";
+import apiDocsRoutes from "./routes/api-docs";
 
 export function createServer() {
   const app = express();
@@ -66,6 +69,15 @@ export function createServer() {
 
   // New Generation routes (Exam and Assignment Information)
   app.use("/api/new-generation", newGenerationRoutes);
+
+  // Smart Classroom routes
+  app.use("/api/smart-classrooms", smartClassroomRoutes);
+
+  // AI Timetable Generation routes
+  app.use("/api/ai-timetable", aiTimetableRoutes);
+
+  // API Documentation
+  app.use("/api/docs", apiDocsRoutes);
 
   // Telegram routes
   app.use("/api/telegram", telegramRoutes);

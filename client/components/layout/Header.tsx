@@ -105,13 +105,13 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-3 hover:scale-105 transition-transform">
+        <Link to="/dashboard" className="flex items-center gap-3 hover:scale-105 transition-transform">
           <LogoImage />
           <div className="flex flex-col">
             <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              The Academic Compass
+              SmartClassroom Pro
             </span>
-            <span className="text-xs text-muted-foreground font-medium">AI-Powered Timetables</span>
+            <span className="text-xs text-muted-foreground font-medium">AI-Powered Smart Classrooms</span>
           </div>
         </Link>
 

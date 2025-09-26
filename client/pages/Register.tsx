@@ -274,7 +274,7 @@ export default function Register() {
 
       if (success) {
         // Registration successful, redirect to dashboard
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setError('Registration failed. Username or email may already be taken.');
       }

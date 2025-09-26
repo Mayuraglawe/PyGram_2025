@@ -55,24 +55,22 @@ export function useLocation() {
 }
 
 // Wrapper component to handle React Router to Next.js Link transition
-interface LinkProps {
+interface LinkProps extends React.HTMLAttributes<HTMLAnchorElement> {
   to?: string;
   href?: string;
   children: React.ReactNode;
-  className?: string;
-  onClick?: () => void;
 }
 
-export function Link({ to, href, children, className, onClick }: LinkProps) {
+export function Link({ to, href, children, className, onClick, ...props }: LinkProps) {
   const linkHref = href || to;
   
   if (!linkHref) {
     console.error('Link component requires either "to" or "href" prop');
-    return <span className={className}>{children}</span>;
+    return <span className={className} {...props}>{children}</span>;
   }
   
   return (
-    <NextLink href={linkHref} className={className} onClick={onClick}>
+    <NextLink href={linkHref} className={className} onClick={onClick} {...props}>
       {children}
     </NextLink>
   );
