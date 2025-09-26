@@ -14,7 +14,7 @@ import {
   Zap,
   TrendingUp
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from '@/lib/navigation';
 
 interface TimetableCardProps {
   id: number;

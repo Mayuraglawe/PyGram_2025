@@ -6,7 +6,7 @@ import { Bot, Calendar, Users, ArrowRight } from "lucide-react";
 import { useAuth, useDepartmentAccess } from "@/contexts/AuthContext";
 import TimetableChatbot from "@/components/timetable/TimetableChatbot";
 import { NewGenerationButton } from "@/components/creator/NewGenerationButton";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 
 export default function CreateTimetablePage() {
   const { user, isCreatorMentor } = useAuth();

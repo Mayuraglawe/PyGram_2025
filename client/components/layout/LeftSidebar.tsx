@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import Link, { useNavigate } from "@/lib/navigation";
+import { useRouter } from 'next/router';
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -80,17 +81,20 @@ export default function LeftSidebar() {
   ];
 
   const NavItemComponent = ({ item, isAction = false }: { item: NavItem; isAction?: boolean }) => {
+    const router = useRouter();
+    const isActive = router.pathname === item.to;
+    
     const content = (
-      <NavLink
-        to={item.to}
-        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative text-foreground/70 hover:bg-accent hover:text-foreground hover:shadow-sm ${isCollapsed && !isMobileOpen ? 'justify-center' : ''}`}
+      <Link
+        href={item.to}
+        className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group relative ${isActive ? 'bg-accent text-foreground' : 'text-foreground/70 hover:bg-accent hover:text-foreground hover:shadow-sm'} ${isCollapsed && !isMobileOpen ? 'justify-center' : ''}`}
         onClick={() => setIsMobileOpen(false)}
       >
         <item.icon className={`h-5 w-5 ${isAction ? 'text-primary' : ''} ${isCollapsed && !isMobileOpen ? 'mx-auto' : ''}`} />
         {(!isCollapsed || isMobileOpen) && (
           <span className={isAction ? 'text-primary font-semibold' : ''}>{item.label}</span>
         )}
-      </NavLink>
+      </Link>
     );
 
     if (isCollapsed && !isMobileOpen) {

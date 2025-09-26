@@ -17,7 +17,7 @@ import {
   Check
 } from "lucide-react";
 import { TimetableGrid } from "@/features/timetable/TimetableGrid";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 import { useToast } from "@/hooks/use-toast";
 
 interface TimeSlot {

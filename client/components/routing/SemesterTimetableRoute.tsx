@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from '@/lib/navigation';
 import { SemesterTimetablePage } from '../../pages/SemesterTimetablePage';
 
 export const SemesterTimetableRoute: React.FC = () => {

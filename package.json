@@ -11,21 +11,21 @@
     ]
   },
   "scripts": {
-    "dev": "vite",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "vite build",
-    "build:server": "vite build --config vite.config.server.ts",
-    "start": "node dist/server/node-build.mjs",
+    "dev": "next dev -p 8080",
+    "build": "next build",
+    "start": "next start -p 8080",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@next/bundle-analyzer": "^15.5.4",
     "@reduxjs/toolkit": "^2.9.0",
     "@supabase/supabase-js": "^2.57.4",
     "@types/node-telegram-bot-api": "^0.64.11",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "next": "^14.2.33",
     "node-telegram-bot-api": "^0.66.0",
     "react-redux": "^9.2.0",
     "zod": "^3.25.76"

@@ -3,7 +3,7 @@ import { TimetableGrid } from "@/features/timetable/TimetableGrid";
 import ConflictHighlighter from "@/features/timetable/ConflictHighlighter";
 import { useGetTimetableByIdQuery, useListTimetablesQuery } from "@/store/api";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import Link from "@/lib/navigation";
 import { Bot, Plus, ArrowLeft } from "lucide-react";
 import { NewGenerationButton } from "@/components/creator/NewGenerationButton";
 import { SessionSelectionDashboard } from "@/components/creator/SessionSelectionDashboard";

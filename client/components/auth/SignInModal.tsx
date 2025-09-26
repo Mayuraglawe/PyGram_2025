@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { setTokens } from "@/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import Link, { useNavigate } from "@/lib/navigation";
 
 export default function SignInModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [login, { isLoading }] = useLoginMutation();

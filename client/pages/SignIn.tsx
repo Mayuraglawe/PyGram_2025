@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from '@/lib/navigation';
+import Link from '@/lib/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -329,10 +330,10 @@ export default function SignInPage() {
             </form>
             
             <div className="mt-4 flex items-center justify-between">
-              <Link to="/role-selection" className="text-sm text-muted-foreground underline">
+              <Link href="/role-selection" className="text-sm text-muted-foreground underline">
                 Change Role
               </Link>
-              <Link to="/register" className="text-sm text-muted-foreground underline">
+              <Link href="/register" className="text-sm text-muted-foreground underline">
                 Create account
               </Link>
             </div>
@@ -366,7 +367,7 @@ export default function SignInPage() {
           <p className="text-xs text-gray-500">
             This is a demonstration system. In production, use secure authentication.
           </p>
-          <Link to="/role-selection" className="text-xs text-primary hover:underline">
+          <Link href="/role-selection" className="text-xs text-primary hover:underline">
             ← Back to Role Selection
           </Link>
         </div>

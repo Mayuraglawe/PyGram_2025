@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import Link from "@/lib/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDepartment } from "@/contexts/DepartmentContext";
 import DepartmentDashboard, { DepartmentIsolationDemo } from "@/components/dashboard/DepartmentDashboard";
@@ -108,7 +108,7 @@ export default function Index() {
           <div className="mt-8 flex flex-wrap gap-4">
             {user && isCreatorMentor() && (
               <Button asChild size="lg" className="rounded-2xl gradient-primary text-white font-semibold hover:scale-105 transition-transform">
-                <Link to="/timetables/create">
+                <Link href="/timetables/create">
                   <Bot className="h-5 w-5 mr-2" />
                   Create with AI Assistant
                 </Link>
@@ -118,7 +118,7 @@ export default function Index() {
             {user && isPublisherMentor() && (
               <>
                 <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold hover:scale-105 transition-transform">
-                  <Link to="/timetables/review">
+                  <Link href="/timetables/review">
                     <Shield className="h-5 w-5 mr-2" />
                     Review Queue
                   </Link>
@@ -136,7 +136,7 @@ export default function Index() {
             )}
             
             <Button asChild size="lg" variant="outline" className="rounded-2xl border-2 hover:scale-105 transition-transform">
-              <Link to="/timetables">
+              <Link href="/timetables">
                 <Eye className="h-5 w-5 mr-2" />
                 View Timetables
               </Link>
@@ -177,7 +177,7 @@ export default function Index() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {isCreatorMentor() && (
                 <Card className="modern-card group cursor-pointer">
-                  <Link to="/timetables/create">
+                  <Link href="/timetables/create">
                     <CardContent className="p-6 text-center">
                       <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                         <Bot className="h-8 w-8 text-white" />
@@ -193,7 +193,7 @@ export default function Index() {
               {isPublisherMentor() && (
                 <>
                   <Card className="modern-card group cursor-pointer">
-                    <Link to="/timetables/review">
+                    <Link href="/timetables/review">
                       <CardContent className="p-6 text-center">
                         <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                           <Shield className="h-8 w-8 text-white" />
@@ -228,7 +228,7 @@ export default function Index() {
 
               {isPublisherMentor() && !(isCreatorMentor()) && (
                 <Card className="modern-card group cursor-pointer">
-                  <Link to="/timetables">
+                  <Link href="/timetables">
                     <CardContent className="p-6 text-center">
                       <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                         <Calendar className="h-8 w-8 text-white" />
@@ -243,7 +243,7 @@ export default function Index() {
 
               {!isPublisherMentor() && (
                 <Card className="modern-card group cursor-pointer">
-                  <Link to="/timetables">
+                  <Link href="/timetables">
                     <CardContent className="p-6 text-center">
                       <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                         <Calendar className="h-8 w-8 text-white" />
@@ -266,7 +266,7 @@ export default function Index() {
                 Recent Timetables
               </h2>
               <Button asChild variant="outline" className="rounded-xl">
-                <Link to="/timetables">
+                <Link href="/timetables">
                   View All
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>

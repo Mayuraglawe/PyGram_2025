@@ -22,7 +22,7 @@ import {
   Search
 } from "lucide-react";
 import { useAuth, useDepartmentAccess } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 
 interface PendingTimetable {
   id: number;
