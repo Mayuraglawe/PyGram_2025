@@ -14,7 +14,7 @@ import { Department } from '@/contexts/DepartmentContext';
 
 export default function SignInPage() {
   const navigate = useNavigate();
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, logout, user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const preSelectedRole = searchParams.get('role');
   
@@ -119,19 +119,13 @@ export default function SignInPage() {
     }
   }, [preSelectedRole]);
 
-  // Redirect if already authenticated
+  // Handle already authenticated users
   useEffect(() => {
-    console.log('🔄 SignIn Redirect Check:', {
+    console.log('🔄 SignIn Authentication Check:', {
       isAuthenticated,
       authLoading,
-      shouldRedirect: isAuthenticated && !authLoading,
       timestamp: new Date().toISOString()
     });
-    
-    if (isAuthenticated && !authLoading) {
-      console.log('🎯 Redirecting to dashboard from SignIn page');
-      navigate('/dashboard');
-    }
   }, [isAuthenticated, authLoading, navigate]);
 
   const getRoleDisplayInfo = () => {
@@ -210,6 +204,57 @@ export default function SignInPage() {
 
   const roleInfo = getRoleDisplayInfo();
   const RoleIcon = roleInfo?.icon || Users;
+
+  // Handle already authenticated users
+  if (isAuthenticated && user && !authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+              Already Signed In
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              You are currently signed in as {user.first_name} {user.last_name}
+            </p>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center">
+                <Shield className="h-5 w-5 mr-2 text-green-600" />
+                Welcome Back!
+              </CardTitle>
+              <CardDescription className="text-center">
+                Role: {user.role === 'mentor' ? `${user.mentor_type?.charAt(0).toUpperCase()}${user.mentor_type?.slice(1)} Mentor` : user.role?.charAt(0).toUpperCase() + user.role?.slice(1)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col space-y-3">
+                <Button onClick={() => navigate('/dashboard')} className="w-full">
+                  Go to Dashboard
+                </Button>
+                <Button onClick={() => {
+                  logout();
+                  setError('');
+                  setUsername('');
+                  setPassword('');
+                }} variant="outline" className="w-full">
+                  Sign Out & Sign In as Different User
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="text-center">
+            <Link href="/role-selection" className="text-xs text-primary hover:underline">
+              ← Back to Role Selection
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

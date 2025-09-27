@@ -38,6 +38,15 @@ export default function LandingPage() {
     timestamp: new Date().toISOString()
   });
 
+  // Debug function to clear authentication for testing
+  const clearAuth = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('auth_token');
+      window.location.reload();
+    }
+  };
+
   const features = [
     {
       icon: Calendar,
@@ -146,10 +155,14 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" asChild>
-              <Link to="/signin">Sign In</Link>
+              <Link href="/signin">Sign In</Link>
             </Button>
             <Button asChild>
-              <Link to="/register">Get Started Free</Link>
+              <Link href="/register">Get Started Free</Link>
+            </Button>
+            {/* Debug button for testing - remove in production */}
+            <Button variant="destructive" size="sm" onClick={clearAuth}>
+              🔧 Clear Auth
             </Button>
           </div>
         </div>
@@ -177,13 +190,13 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row mb-12">
               <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90" asChild>
-                <Link to="/register">
+                <Link href="/register">
                   Start Free 30-Day Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                <Link to="/signin">
+                <Link href="/signin">
                   Access Dashboard
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -353,13 +366,13 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" className="w-full sm:w-auto bg-white text-primary hover:bg-white/90" asChild>
-                <Link to="/register">
+                <Link href="/register">
                   Start Your Free Trial Today
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10" asChild>
-                <Link to="/signin">
+                <Link href="/signin">
                   Access Existing Account
                 </Link>
               </Button>
@@ -387,25 +400,25 @@ export default function LandingPage() {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <div className="space-y-2 text-sm">
-                <Link to="/features" className="block text-muted-foreground hover:text-primary">Features</Link>
-                <Link to="/pricing" className="block text-muted-foreground hover:text-primary">Pricing</Link>
-                <Link to="/demo" className="block text-muted-foreground hover:text-primary">Live Demo</Link>
+                <Link href="/features" className="block text-muted-foreground hover:text-primary">Features</Link>
+                <Link href="/pricing" className="block text-muted-foreground hover:text-primary">Pricing</Link>
+                <Link href="/demo" className="block text-muted-foreground hover:text-primary">Live Demo</Link>
               </div>
             </div>
             <div>
               <h3 className="font-semibold mb-4">Support</h3>
               <div className="space-y-2 text-sm">
-                <Link to="/docs" className="block text-muted-foreground hover:text-primary">Documentation</Link>
-                <Link to="/support" className="block text-muted-foreground hover:text-primary">Help Center</Link>
-                <Link to="/contact" className="block text-muted-foreground hover:text-primary">Contact Us</Link>
+                <Link href="/docs" className="block text-muted-foreground hover:text-primary">Documentation</Link>
+                <Link href="/support" className="block text-muted-foreground hover:text-primary">Help Center</Link>
+                <Link href="/contact" className="block text-muted-foreground hover:text-primary">Contact Us</Link>
               </div>
             </div>
             <div>
               <h3 className="font-semibold mb-4">Company</h3>
               <div className="space-y-2 text-sm">
-                <Link to="/about" className="block text-muted-foreground hover:text-primary">About Us</Link>
-                <Link to="/careers" className="block text-muted-foreground hover:text-primary">Careers</Link>
-                <Link to="/privacy" className="block text-muted-foreground hover:text-primary">Privacy Policy</Link>
+                <Link href="/about" className="block text-muted-foreground hover:text-primary">About Us</Link>
+                <Link href="/careers" className="block text-muted-foreground hover:text-primary">Careers</Link>
+                <Link href="/privacy" className="block text-muted-foreground hover:text-primary">Privacy Policy</Link>
               </div>
             </div>
           </div>

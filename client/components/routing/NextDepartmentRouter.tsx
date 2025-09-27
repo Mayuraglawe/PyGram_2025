@@ -38,7 +38,9 @@ export function NextDepartmentRouter({ children }: { children: React.ReactNode }
       authLoading,
       deptLoading,
       user: user?.username,
+      userRole: user?.role,
       userDepartments: userDepartments?.length,
+      activeDepartment: activeDepartment?.id,
       timestamp: new Date().toISOString()
     });
 
@@ -50,6 +52,10 @@ export function NextDepartmentRouter({ children }: { children: React.ReactNode }
     // Public routes that don't require authentication
     const publicRoutes = ['/signin', '/register', '/role-selection', '/'];
     const isPublicRoute = publicRoutes.includes(router.pathname);
+    
+    // Skip automatic redirects if user is on sign-in related pages
+    const isSignInFlow = router.pathname === '/signin' || router.pathname === '/role-selection';
+    const hasRoleParam = router.query.role;
 
     console.log('🔍 Route Analysis:', {
       pathname: router.pathname,
@@ -64,23 +70,98 @@ export function NextDepartmentRouter({ children }: { children: React.ReactNode }
       return;
     }
 
-    // If authenticated but no departments assigned, redirect to role selection
-    if (isAuthenticated && user && (!userDepartments || userDepartments.length === 0) && !isPublicRoute) {
-      console.log('🚨 Redirecting to role-selection - no departments');
-      router.push('/role-selection');
+    // Skip routing logic if on public routes
+    if (isPublicRoute) {
       return;
     }
 
-    // If authenticated with departments but no active department selected
-    if (isAuthenticated && userDepartments && userDepartments.length > 0 && !activeDepartment && !isPublicRoute) {
-      // Auto-select first department if only one available
-      if (userDepartments.length === 1) {
-        switchDepartment(userDepartments[0].id);
-      }
-      // If multiple departments, let user choose (they'll see department selector)
+    // Skip automatic redirects if user is in sign-in flow
+    if (isSignInFlow && isAuthenticated) {
+      console.log('🔐 User in sign-in flow - allowing manual navigation');
+      return;
     }
 
-  }, [isAuthenticated, user, userDepartments, activeDepartment, authLoading, deptLoading, router]);
+    // If authenticated user is admin, let them access everything without department constraints  
+    if (isAuthenticated && user?.role === 'admin' && !isSignInFlow) {
+      console.log('👑 Admin user - bypassing department routing');
+      return;
+    }
+
+    // For authenticated non-admin users, check department assignment
+    if (isAuthenticated && user) {
+      // Check if user has departments assigned in their profile
+      const hasUserDepartments = user.departments && user.departments.length > 0;
+      const hasContextDepartments = userDepartments && userDepartments.length > 0;
+
+      console.log('🏢 Department Status:', {
+        hasUserDepartments,
+        hasContextDepartments,
+        userDepartments: user.departments?.length || 0,
+        contextDepartments: userDepartments?.length || 0,
+        userRole: user.role
+      });
+
+      // If user has departments in their profile but context is still loading, wait
+      if (hasUserDepartments && !hasContextDepartments && !deptLoading) {
+        console.log('⏳ User has departments but context is still loading, waiting...');
+        return;
+      }
+
+      // If user has no departments at all, redirect based on role
+      if (!hasUserDepartments && !hasContextDepartments) {
+        console.log('🚨 No departments found - redirecting based on role');
+        
+        // Students and mentors should go to register to select departments
+        if (user.role === 'student' || user.role === 'mentor') {
+          console.log('📋 Redirecting to register for department selection');
+          router.push('/register?step=department-selection');
+          return;
+        }
+      }
+
+      // If user has departments but no active department is selected
+      if ((hasUserDepartments || hasContextDepartments) && !activeDepartment) {
+        // Auto-select first department if only one available
+        if (userDepartments && userDepartments.length === 1) {
+          console.log('🎯 Auto-selecting single department:', userDepartments[0].name);
+          switchDepartment(userDepartments[0].id);
+          return;
+        }
+        // If multiple departments, let user choose (they'll see department selector below)
+        console.log('🎯 Multiple departments available, showing selector');
+      }
+
+      // Route authenticated users to appropriate dashboard if they land on root path
+      if (router.pathname === '/' && isAuthenticated && activeDepartment) {
+        const roleRoutes = {
+          admin: '/admin',
+          mentor: user.mentor_type === 'creator' ? '/ai-timetable-creator' : '/hod-review',
+          student: '/dashboard'
+        };
+        
+        const targetRoute = roleRoutes[user.role] || '/dashboard';
+        console.log(`🎯 Redirecting ${user.role} from root to ${targetRoute}`);
+        router.push(targetRoute);
+        return;
+      }
+
+      // Route authenticated users from /dashboard to their specific dashboard
+      if (router.pathname === '/dashboard' && isAuthenticated && activeDepartment && user.role !== 'student') {
+        const roleRoutes = {
+          admin: '/admin',
+          mentor: user.mentor_type === 'creator' ? '/ai-timetable-creator' : '/hod-review'
+        };
+        
+        const targetRoute = roleRoutes[user.role];
+        if (targetRoute) {
+          console.log(`🎯 Redirecting ${user.role} from dashboard to ${targetRoute}`);
+          router.push(targetRoute);
+          return;
+        }
+      }
+    }
+
+  }, [isAuthenticated, user, userDepartments, activeDepartment, authLoading, deptLoading, router, switchDepartment]);
 
   // ============================================================================
   // LOADING STATES
@@ -141,9 +222,9 @@ export function NextDepartmentRouter({ children }: { children: React.ReactNode }
                       <div className="flex items-center space-x-2">
                         <Badge variant="secondary" className="flex items-center space-x-1">
                           <Users className="h-3 w-3" />
-                          <span>{dept.role}</span>
+                          <span>{user?.role || 'Member'}</span>
                         </Badge>
-                        {dept.isAdmin && (
+                        {user?.role === 'admin' && (
                           <Badge variant="outline" className="flex items-center space-x-1">
                             <Shield className="h-3 w-3" />
                             <span>Admin</span>
